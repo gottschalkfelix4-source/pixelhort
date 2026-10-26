@@ -17,7 +17,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 CODES = {}
 
 
-def make_handler(public):
+def make_handler(public, auth_public=None):
     class H(BaseHTTPRequestHandler):
         def log_message(self, *a):
             pass
@@ -36,7 +36,7 @@ def make_handler(public):
             if u.path == "/.well-known/openid-configuration":
                 self.send_json({
                     "issuer": public,
-                    "authorization_endpoint": f"{public}/authorize",
+                    "authorization_endpoint": f"{auth_public or public}/authorize",
                     "token_endpoint": f"{public}/token",
                     "userinfo_endpoint": f"{public}/userinfo",
                 })
@@ -112,11 +112,12 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--port", type=int, default=8999)
     p.add_argument("--public", default="http://host.docker.internal:8999")
+    p.add_argument("--auth-public", help="browser-facing base URL for /authorize (e.g. http://10.0.2.2:8999 for the Android emulator)")
     p.add_argument("--test", action="store_true")
     p.add_argument("--server", default="http://localhost:2342")
     p.add_argument("--admin-token")
     a = p.parse_args()
-    srv = HTTPServer(("0.0.0.0", a.port), make_handler(a.public))
+    srv = HTTPServer(("0.0.0.0", a.port), make_handler(a.public, a.auth_public))
     if a.test:
         threading.Thread(target=srv.serve_forever, daemon=True).start()
         run_test(a.server, a.admin_token, f"http://localhost:{a.port}")
