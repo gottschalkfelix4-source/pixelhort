@@ -16,7 +16,7 @@ GPU (NVIDIA): Repository auf ghcr.io/gottschalkfelix4-source/pixelhort-ml:latest
 Hinweis: Das Gesichtsmodell (InsightFace buffalo_l) ist nur für nicht-kommerzielle Nutzung lizenziert.</Overview>
   <Category>MediaApp:Photos Tools:</Category>
   <WebUI/>
-  <TemplateURL>https://raw.githubusercontent.com/gottschalkfelix4-source/pixelhort/main/unraid/pixelhort-ml.xml</TemplateURL>
+  <TemplateURL/>
   <Icon>https://raw.githubusercontent.com/gottschalkfelix4-source/pixelhort/main/unraid/pixelhort.png</Icon>
   <ExtraParams/>
   <PostArgs/>
@@ -30,6 +30,8 @@ Hinweis: Das Gesichtsmodell (InsightFace buffalo_l) ist nur für nicht-kommerzie
   <Config Name="ML-API-Key" Target="PH_ML_API_KEY" Default="" Mode="" Description="Optional: Schlüssel, den der Server mitsenden muss (PH_ML_API_KEY im Container pixelhort). Empfohlen, wenn der Port freigegeben ist." Type="Variable" Display="always" Required="false" Mask="true"/>
   <Config Name="Modelle entladen nach (Sekunden)" Target="PH_ML_MODEL_TTL_SECS" Default="300" Mode="" Description="Ungenutzte Modelle nach dieser Zeit aus dem RAM entfernen (0 = nie)." Type="Variable" Display="advanced" Required="false" Mask="false">300</Config>
   <Config Name="Threads" Target="PH_ML_THREADS" Default="" Mode="" Description="Optional: Anzahl CPU-Threads für die Inferenz (leer = automatisch)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Modelle vorladen" Target="PH_ML_PRELOAD" Default="" Mode="" Description="Optional: Modelle beim Start laden, kommagetrennt aus clip, faces, ocr, objects. Leer = beim ersten Einsatz." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="CLIP-Modell" Target="PH_ML_CLIP_MODEL" Default="ViT-B-32__openai" Mode="" Description="Modell für Smart Search. Nach einem Wechsel in Pixelhort die Smart-Search-Indizierung neu starten." Type="Variable" Display="advanced" Required="false" Mask="false">ViT-B-32__openai</Config>
   <Config Name="NVIDIA_VISIBLE_DEVICES" Target="NVIDIA_VISIBLE_DEVICES" Default="" Mode="" Description="Nur für die CUDA-Variante: GPU-UUID oder 'all'." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="Benutzer-ID für den Cache (Unraid: 99 = nobody)." Type="Variable" Display="advanced" Required="true" Mask="false">99</Config>
   <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Gruppen-ID für den Cache (Unraid: 100 = users)." Type="Variable" Display="advanced" Required="true" Mask="false">100</Config>

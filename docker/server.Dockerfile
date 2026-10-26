@@ -39,6 +39,9 @@ COPY --from=build /out/pixelhort-server /usr/local/bin/pixelhort-server
 COPY --from=build /out/pixelhort /usr/local/bin/pixelhort
 COPY --from=web /web/dist /app/web
 COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+# Unraid templates + installer (see unraid/README.md).
+COPY unraid/*.xml unraid/pixelhort.png /usr/share/pixelhort/unraid/
+COPY --chmod=755 unraid/install.sh /usr/share/pixelhort/unraid/install.sh
 # The entrypoint starts as root only to fix ownership of /data, then runs the
 # server as PUID:PGID (Unraid: 99:100).
 ENV PH_DATA_DIR=/data \

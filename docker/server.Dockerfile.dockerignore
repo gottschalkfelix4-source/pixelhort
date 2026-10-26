@@ -9,3 +9,6 @@ web/node_modules
 web/dist
 **/target
 !docker/entrypoint.sh
+!unraid/*.xml
+!unraid/pixelhort.png
+!unraid/install.sh

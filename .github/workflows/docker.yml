@@ -7,7 +7,6 @@ on:
     paths-ignore:
       - "mobile/**"
       - "tests/**"
-      - "unraid/**"
       - "docs/**"
       - "**/*.md"
       - ".github/workflows/ci.yml"

@@ -13,7 +13,7 @@
 Pixelhort erstellt die Tabellen beim ersten Start selbst und sichert die Datenbank automatisch (pg_dump) in seinen Datenordner.</Overview>
   <Category>Tools: MediaApp:Photos</Category>
   <WebUI/>
-  <TemplateURL>https://raw.githubusercontent.com/gottschalkfelix4-source/pixelhort/main/unraid/pixelhort-db.xml</TemplateURL>
+  <TemplateURL/>
   <Icon>https://raw.githubusercontent.com/gottschalkfelix4-source/pixelhort/main/unraid/pixelhort.png</Icon>
   <ExtraParams>--shm-size=256m</ExtraParams>
   <PostArgs/>

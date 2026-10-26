@@ -19,17 +19,24 @@ Drei Container, alle im eigenen Docker-Netzwerk `pixelhort`:
    Unter *Einstellungen → Docker* (erweiterte Ansicht) „Benutzerdefinierte Netzwerke
    beibehalten“ auf *Ja* stellen, damit das Netzwerk in der Auswahl erscheint.
 
-2. **Templates kopieren** (im Unraid-Terminal):
+2. **Templates installieren** (im Unraid-Terminal). Die Templates samt Icon stecken im
+   Server-Image, daher genügt der Registry-Login (siehe [Images](#images)):
 
    ```bash
-   cd /boot/config/plugins/dockerMan/templates-user
-   for t in pixelhort-db pixelhort-ml pixelhort; do
-     wget -O my-$t.xml https://raw.githubusercontent.com/gottschalkfelix4-source/pixelhort/main/unraid/$t.xml
-   done
+   docker run --rm --entrypoint /usr/share/pixelhort/unraid/install.sh \
+     -v /boot/config/plugins/dockerMan:/dockerman \
+     ghcr.io/gottschalkfelix4-source/pixelhort-server:latest
    ```
+
+   Das legt `my-pixelhort-db.xml`, `my-pixelhort-ml.xml` und `my-pixelhort.xml` unter
+   `/boot/config/plugins/dockerMan/templates-user/` an. Vorhandene Templates mit Inhalt
+   bleiben erhalten (sie enthalten die Einstellungen installierter Container); leere
+   werden ersetzt. Mit `… install.sh --force` (Argument ans Ende anhängen) alle überschreiben.
 
    Alternativ die drei XML-Dateien per Netzwerkfreigabe nach
    `/boot/config/plugins/dockerMan/templates-user/` kopieren (Dateiname mit `my-` beginnen).
+   **Nicht** per `wget` von `raw.githubusercontent.com` laden: Solange das Repository
+   privat ist, liefert GitHub dort 404 und es entstehen leere Templates.
 
 3. Unter *Docker → Container hinzufügen* nacheinander die Templates
    **pixelhort-db**, **pixelhort-ml** und **pixelhort** auswählen:
@@ -57,9 +64,9 @@ Registry anmelden (Personal Access Token mit `read:packages`):
 docker login ghcr.io -u gottschalkfelix4-source
 ```
 
-Werden die Pakete auf GitHub öffentlich gestellt, entfällt das. Template-URL und
-Icon (`raw.githubusercontent.com`) funktionieren ebenfalls nur bei einem öffentlichen
-Repository. Bei privatem Repo die XML-Dateien manuell kopieren (Schritt 2).
+Werden die Pakete auf GitHub öffentlich gestellt, entfällt das. Die Icon-URL
+(`raw.githubusercontent.com`) funktioniert nur bei einem öffentlichen Repository; der
+Installer legt das Icon deshalb direkt unter `dockerMan/images/` ab.
 
 ## ML auf einem anderen Rechner
 

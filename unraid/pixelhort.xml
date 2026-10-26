@@ -15,7 +15,7 @@ Automatisches Backup per iOS-/Android-App, Upload per Web und CLI, externe Bibli
 Benötigt die Container "pixelhort-db" (PostgreSQL mit pgvector) und optional "pixelhort-ml" (Machine Learning, auch auf einem anderen Rechner möglich). Alle drei Container im Docker-Netzwerk "pixelhort" betreiben (siehe Anleitung).</Overview>
   <Category>MediaApp:Photos MediaServer:Photos Backup:</Category>
   <WebUI>http://[IP]:[PORT:2342]/</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/gottschalkfelix4-source/pixelhort/main/unraid/pixelhort.xml</TemplateURL>
+  <TemplateURL/>
   <Icon>https://raw.githubusercontent.com/gottschalkfelix4-source/pixelhort/main/unraid/pixelhort.png</Icon>
   <ExtraParams/>
   <PostArgs/>
@@ -35,9 +35,14 @@ Benötigt die Container "pixelhort-db" (PostgreSQL mit pgvector) und optional "p
   <Config Name="OAuth Issuer URL" Target="PH_OAUTH_ISSUER_URL" Default="" Mode="" Description="Optional: OpenID-Connect-Anbieter (Authentik, Authelia, Keycloak, …). Auch in der Weboberfläche einstellbar." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="OAuth Client ID" Target="PH_OAUTH_CLIENT_ID" Default="" Mode="" Description="Optional: OIDC Client ID." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="OAuth Client Secret" Target="PH_OAUTH_CLIENT_SECRET" Default="" Mode="" Description="Optional: OIDC Client Secret." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="OAuth Scope" Target="PH_OAUTH_SCOPE" Default="openid email profile" Mode="" Description="Optional: angefragte OIDC-Scopes." Type="Variable" Display="advanced" Required="false" Mask="false">openid email profile</Config>
+  <Config Name="OAuth Button-Text" Target="PH_OAUTH_BUTTON_TEXT" Default="Login with SSO" Mode="" Description="Optional: Beschriftung des SSO-Buttons auf der Anmeldeseite." Type="Variable" Display="advanced" Required="false" Mask="false">Login with SSO</Config>
+  <Config Name="OAuth Auto-Registrierung" Target="PH_OAUTH_AUTO_REGISTER" Default="true" Mode="" Description="Neue OIDC-Benutzer beim ersten Login automatisch anlegen (true/false)." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
   <Config Name="DB-Backup Zeitplan" Target="PH_BACKUP_CRON" Default="0 0 2 * * *" Mode="" Description="Cron-Ausdruck mit Sekundenfeld für das automatische Datenbank-Backup (Standard: täglich 02:00)." Type="Variable" Display="advanced" Required="false" Mask="false">0 0 2 * * *</Config>
   <Config Name="DB-Backups behalten" Target="PH_BACKUP_KEEP" Default="14" Mode="" Description="Anzahl aufbewahrter Datenbank-Backups (unter /data/backups)." Type="Variable" Display="advanced" Required="false" Mask="false">14</Config>
   <Config Name="Reverse-Geocoding" Target="PH_REVERSE_GEOCODING" Default="true" Mode="" Description="Ortsnamen aus GPS-Daten (lädt einmalig ca. 10 MB GeoNames-Daten)." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="Hintergrund-Jobs" Target="PH_WORKERS" Default="true" Mode="" Description="Thumbnails, Metadaten, ML und Transkodierung in diesem Container ausführen (true/false)." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="Log-Level" Target="PH_LOG" Default="info,sqlx=warn,tower_http=warn" Mode="" Description="Log-Filter (z. B. debug für Fehlersuche)." Type="Variable" Display="advanced" Required="false" Mask="false">info,sqlx=warn,tower_http=warn</Config>
   <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="Benutzer-ID für Dateien (Unraid: 99 = nobody)." Type="Variable" Display="advanced" Required="true" Mask="false">99</Config>
   <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Gruppen-ID für Dateien (Unraid: 100 = users)." Type="Variable" Display="advanced" Required="true" Mask="false">100</Config>
   <Config Name="TZ" Target="TZ" Default="Europe/Berlin" Mode="" Description="Zeitzone für Logs und Zeitpläne." Type="Variable" Display="advanced" Required="false" Mask="false">Europe/Berlin</Config>
