@@ -1,7 +1,7 @@
 target/
 node_modules/
 web/dist/
-data/
+/data/
 .env
 *.iml
 .gradle/
@@ -9,4 +9,4 @@ build/
 local.properties
 mobile/ios/*.xcodeproj
 mobile/ios/DerivedData/
-models/
+/models/
