@@ -58,6 +58,23 @@
     });
   });
 
+  /** Thumbnails not rendered yet get moved to the front of the queue by the server: retry a few times. */
+  function retryThumbnail(e: Event) {
+    const img = e.currentTarget as HTMLImageElement;
+    const n = Number(img.dataset.retries ?? 0);
+    if (n >= 6) return;
+    img.dataset.retries = String(n + 1);
+    setTimeout(
+      () => {
+        if (!img.isConnected) return;
+        const url = new URL(img.src);
+        url.searchParams.set('r', String(n + 1));
+        img.src = url.toString();
+      },
+      Math.min(30, 2 ** (n + 1)) * 1000,
+    );
+  }
+
   function click(e: MouseEvent, a: AssetDto) {
     if (selection && (pickMode || selection.active || e.ctrlKey || e.metaKey)) {
       e.preventDefault();
@@ -143,6 +160,7 @@
             decoding="async"
             draggable="false"
             onload={(e) => (e.currentTarget as HTMLImageElement).classList.add('loaded')}
+            onerror={retryThumbnail}
           />
           <div class="overlay">
             <div class="top-right">

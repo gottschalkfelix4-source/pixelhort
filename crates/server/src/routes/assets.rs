@@ -722,6 +722,28 @@ async fn thumbnail(
                 .await?;
             path = pick(get_asset(&state.db, id).await?);
         }
+    } else if !exists(&path) {
+        // A grid tile is waiting for its thumbnail: move the job to the front of the queue
+        // (the web app retries the image). Failed jobs are left alone.
+        let bumped = sqlx::query(
+            "UPDATE jobs SET run_at = now() - interval '1 hour' WHERE queue = 'thumbnails' AND asset_id = $1 AND status = 'waiting'",
+        )
+        .bind(id)
+        .execute(&state.db)
+        .await?
+        .rows_affected();
+        let known: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM jobs WHERE queue = 'thumbnails' AND asset_id = $1)")
+            .bind(id)
+            .fetch_one(&state.db)
+            .await?;
+        if bumped == 0 && !known {
+            state.jobs.enqueue_asset("thumbnails", id).await?;
+            sqlx::query("UPDATE jobs SET run_at = now() - interval '1 hour' WHERE queue = 'thumbnails' AND asset_id = $1 AND status = 'waiting'")
+                .bind(id)
+                .execute(&state.db)
+                .await?;
+        }
+        state.jobs.wake("thumbnails");
     }
     let path = path.ok_or_else(AppError::not_found)?;
     serve(&path, req, Some("image/jpeg"), None).await
