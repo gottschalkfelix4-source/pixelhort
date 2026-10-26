@@ -46,8 +46,10 @@ final class BackupFlowUITests: XCTestCase {
         passwordField.typeText(password)
         app.buttons["login.submit"].tap()
 
+        dismissSavePassword(app)
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "main tabs missing after login")
+        dismissSavePassword(app)
         attach(app, "after-login")
 
         // Settings → backup options → enable
@@ -102,6 +104,20 @@ final class BackupFlowUITests: XCTestCase {
     }
 
     // MARK: helpers
+
+    /// Signed builds trigger iOS' "Save Password?" sheet after the login form.
+    private func dismissSavePassword(_ app: XCUIApplication) {
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        for source in [app, springboard] {
+            for label in ["Not Now", "Never for This Website", "Not now"] {
+                let button = source.buttons[label]
+                if button.waitForExistence(timeout: 2) && button.isHittable {
+                    button.tap()
+                    return
+                }
+            }
+        }
+    }
 
     /// iOS 18 shows the photo permission as a full-screen sheet owned by SpringBoard,
     /// which UI interruption monitors do not catch.
