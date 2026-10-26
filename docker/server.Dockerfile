@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 COPY web/ ./
 RUN npm run build
 
-FROM rust:1-bookworm AS build
+FROM rust:1-trixie AS build
 WORKDIR /src
 COPY Cargo.toml Cargo.lock ./
 COPY crates/common crates/common
@@ -22,17 +22,25 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     cargo build --release --locked -p pixelhort-server -p pixelhort-cli \
  && mkdir -p /out && cp target/release/pixelhort-server target/release/pixelhort /out/
 
-FROM debian:bookworm-slim
-# ffmpeg: video frames + transcoding, exiftool: metadata, heif-convert: HEIC/AVIF,
+# Trixie: libheif < 1.17 / ffmpeg < 7 (bookworm) cannot decode iPhone HDR photos
+# with gain maps (iOS 18+).
+FROM debian:trixie-slim
+# ffmpeg: video frames + transcoding, exiftool: metadata, heif-convert: HEIC/AVIF
+# (libheif's HEVC decoder is a separate plugin package),
 # postgresql-client-16: pg_dump for automatic database backups.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates curl gnupg tini \
-      ffmpeg libimage-exiftool-perl libheif-examples \
+      ffmpeg libimage-exiftool-perl libheif-examples libheif-plugin-libde265 libheif-plugin-dav1d \
  && install -d /usr/share/postgresql-common/pgdg \
  && curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc \
- && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" \
+ && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main" \
       > /etc/apt/sources.list.d/pgdg.list \
  && apt-get update && apt-get install -y --no-install-recommends postgresql-client-16 \
+ # Intel GPU transcoding (VAAPI + Quick Sync); the drivers only exist for amd64.
+ && if [ "$(dpkg --print-architecture)" = amd64 ]; then \
+      sed -i 's/^Components: main$/Components: main non-free/' /etc/apt/sources.list.d/debian.sources \
+   && apt-get update && apt-get install -y --no-install-recommends intel-media-va-driver-non-free libmfx-gen1.2; \
+    fi \
  && apt-get purge -y gnupg && apt-get autoremove -y && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /data
 COPY --from=build /out/pixelhort-server /usr/local/bin/pixelhort-server

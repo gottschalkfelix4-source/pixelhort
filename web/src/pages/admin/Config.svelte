@@ -112,7 +112,19 @@
               >{/each}
           </select>
         </label>
+        <label class="field"
+          >{t('cfgAccel')}
+          <select bind:value={cfg.video.accel}>
+            <option value="none">{t('cfgAccelNone')}</option>
+            <option value="vaapi">VAAPI (Intel)</option>
+            <option value="qsv">Quick Sync (Intel)</option>
+          </select>
+        </label>
+        {#if cfg.video.accel !== 'none'}
+          <label class="field">{t('cfgAccelDevice')}<input type="text" bind:value={cfg.video.accelDevice} placeholder="/dev/dri/renderD128" /></label>
+        {/if}
       </div>
+      <p class="muted small">{t('cfgAccelHint')}</p>
     </fieldset>
 
     <fieldset class="card">

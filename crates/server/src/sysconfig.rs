@@ -89,6 +89,10 @@ pub struct VideoConfig {
     pub target_resolution: u32,
     pub crf: u32,
     pub preset: String,
+    /// Hardware acceleration: `none`, `vaapi` or `qsv` (falls back to software on failure).
+    pub accel: String,
+    /// VAAPI render node used by `vaapi` and `qsv`.
+    pub accel_device: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -149,7 +153,13 @@ impl Default for BackupConfig {
 
 impl Default for VideoConfig {
     fn default() -> Self {
-        Self { target_resolution: 720, crf: 23, preset: "veryfast".into() }
+        Self {
+            target_resolution: 720,
+            crf: 23,
+            preset: "veryfast".into(),
+            accel: "none".into(),
+            accel_device: "/dev/dri/renderD128".into(),
+        }
     }
 }
 

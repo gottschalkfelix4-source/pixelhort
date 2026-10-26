@@ -88,6 +88,12 @@ async fn put_config(State(state): State<SharedState>, _a: AdminAuth, Json(patch)
     if !domain.is_empty() && !(domain.starts_with("http://") || domain.starts_with("https://")) {
         return Err(AppError::bad("external domain must start with http:// or https://"));
     }
+    if !["none", "vaapi", "qsv"].contains(&cfg.video.accel.as_str()) {
+        return Err(AppError::bad("video acceleration must be none, vaapi or qsv"));
+    }
+    if cfg.video.accel != "none" && !cfg.video.accel_device.starts_with("/dev/") {
+        return Err(AppError::bad("acceleration device must be a path under /dev/"));
+    }
     if cfg.map.enabled && !cfg.map.tile_url.contains("{z}") {
         return Err(AppError::bad("map tile URL must contain {z}, {x} and {y}"));
     }

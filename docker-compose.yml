@@ -36,6 +36,9 @@ services:
       - ${PH_DATA_PATH:-./data/library}:/data
       # External libraries (read-only), e.g.:
       # - /mnt/photos:/mnt/photos:ro
+    # Intel GPU video transcoding (VAAPI / Quick Sync, select it under
+    # Administration → Settings → Video transcoding):
+    # devices: ["/dev/dri:/dev/dri"]
 
   ml:
     build:

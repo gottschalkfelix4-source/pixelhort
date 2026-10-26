@@ -121,6 +121,7 @@ pub struct Probe {
     pub duration: Option<f64>,
     pub width: Option<i32>,
     pub height: Option<i32>,
+    /// Clockwise degrees to display the video upright (0, 90, 180 or 270).
     pub rotation: i32,
     pub video_codec: Option<String>,
     pub audio_codec: Option<String>,
@@ -145,9 +146,10 @@ pub async fn ffprobe(path: &Path) -> anyhow::Result<Probe> {
                 p.video_codec = s["codec_name"].as_str().map(String::from);
                 p.width = s["width"].as_i64().map(|w| w as i32);
                 p.height = s["height"].as_i64().map(|h| h as i32);
+                // The display matrix rotation counts counter-clockwise, the old `rotate` tag clockwise.
                 let rot = s["tags"]["rotate"].as_str().and_then(|r| r.parse::<i32>().ok()).or_else(|| {
                     s["side_data_list"].as_array().and_then(|l| {
-                        l.iter().find_map(|d| d["rotation"].as_i64().map(|r| r as i32))
+                        l.iter().find_map(|d| d["rotation"].as_i64().map(|r| -r as i32))
                     })
                 });
                 p.rotation = rot.unwrap_or(0).rem_euclid(360);
@@ -204,11 +206,15 @@ async fn decode_file(path: PathBuf) -> anyhow::Result<DynamicImage> {
     .await?
 }
 
+fn is_missing_tool(e: &anyhow::Error) -> bool {
+    e.downcast_ref::<std::io::Error>().is_some_and(|e| e.kind() == std::io::ErrorKind::NotFound)
+}
+
 async fn heif_convert(path: &Path) -> anyhow::Result<DynamicImage> {
     let tmp = std::env::temp_dir().join(format!("ph-{}.jpg", uuid::Uuid::new_v4()));
     // libheif ≥ 1.17 ships the tool as `heif-dec`; older releases call it `heif-convert`.
     let mut res = run("heif-convert", os_args!["-q", "92", path.as_os_str(), tmp.as_os_str()]).await;
-    if res.is_err() {
+    if res.as_ref().is_err_and(is_missing_tool) {
         res = run("heif-dec", os_args!["-q", "92", path.as_os_str(), "-o", tmp.as_os_str()]).await;
     }
     let img = match res {
@@ -245,10 +251,12 @@ pub async fn load_upright(path: &Path, is_video: bool, orientation: Option<i32>,
             return Ok(orient(img));
         }
     }
+    let mut heif_err = None;
     if HEIF_EXTENSIONS.contains(&ext.as_str()) {
         // libheif applies the HEIF transformations itself.
-        if let Ok(img) = heif_convert(path).await {
-            return Ok(img);
+        match heif_convert(path).await {
+            Ok(img) => return Ok(img),
+            Err(e) => heif_err = Some(e),
         }
     }
     if raw || !NATIVE_EXTENSIONS.contains(&ext.as_str()) {
@@ -265,7 +273,13 @@ pub async fn load_upright(path: &Path, is_video: bool, orientation: Option<i32>,
     if let Ok(img) = decode_file(path.to_path_buf()).await {
         return Ok(orient(img));
     }
-    ffmpeg_decode(path).await.map(orient).context("unsupported image format")
+    let res = ffmpeg_decode(path).await.map(orient);
+    // For HEIF the libheif error is the telling one (ffmpeg < 7 cannot read HEIF at all).
+    let res = match heif_err {
+        Some(h) => res.map_err(|e| anyhow!("{h:#}; {e:#}")),
+        None => res,
+    };
+    res.context("unsupported image format")
 }
 
 pub fn apply_orientation(img: DynamicImage, orientation: i32) -> DynamicImage {

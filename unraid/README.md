@@ -79,6 +79,16 @@ Parameter sowie `NVIDIA_VISIBLE_DEVICES` setzen. Mit Intel-GPU (Arc) das Reposit
 `…/pixelhort-ml:latest-openvino` ändern und `/dev/dri` als *Intel-GPU*-Gerät eintragen
 (Treiber `i915`/`xe` muss auf dem Host geladen sein, z. B. per Intel-GPU-TOP-Plugin).
 
+## Video-Transkodierung auf der GPU
+
+Videos, die Browser nicht direkt abspielen (z. B. HEVC vom iPhone), wandelt Pixelhort
+nach H.264 um. Mit Intel-GPU (Arc oder iGPU) beim Container `pixelhort` unter
+*Intel-GPU (Video-Transkodierung)* `/dev/dri` eintragen und in der Weboberfläche unter
+*Administration → Einstellungen → Video-Transkodierung* **VAAPI** oder **Quick Sync**
+wählen. Mit mehreren GPUs das *GPU-Gerät* anpassen (z. B. `/dev/dri/renderD129`;
+`ls -l /dev/dri/by-path` zeigt die Zuordnung). Klappt die GPU nicht, wird automatisch
+in Software transkodiert und eine Warnung ins Log geschrieben.
+
 ## Casting auf Fernseher (DLNA)
 
 Smart-TVs werden per SSDP-Multicast gesucht. Aus dem Bridge-Netzwerk `pixelhort`

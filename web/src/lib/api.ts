@@ -92,7 +92,7 @@ export interface MlConfig {
 export interface SystemConfig {
   ml: MlConfig;
   backup: { enabled: boolean; cron: string; keep: number };
-  video: { targetResolution: number; crf: number; preset: string };
+  video: { targetResolution: number; crf: number; preset: string; accel: 'none' | 'vaapi' | 'qsv'; accelDevice: string };
   trash: { days: number };
   reverseGeocoding: { enabled: boolean };
   passwordLogin: { enabled: boolean };

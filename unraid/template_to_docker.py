@@ -28,6 +28,8 @@ for c in root.findall("Config"):
         args += ["-p", f"{value}:{target}/{c.get('Mode') or 'tcp'}"]
     elif kind == "Path":
         args += ["-v", f"{value}:{target}:{c.get('Mode') or 'rw'}"]
+    elif kind == "Device":
+        args += ["--device", value]
 extra = (root.findtext("ExtraParams") or "").split()
 args += extra + [a.image or root.findtext("Repository")]
 print(json.dumps(args))
