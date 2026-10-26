@@ -50,6 +50,12 @@ docker compose up -d --build
 
 Danach `http://<host>:2342` öffnen. Das erste Konto wird Administrator.
 
+### Unraid
+
+Templates für Server, ML-Dienst und Datenbank liegen in [unraid/](unraid/README.md)
+(eigenes Docker-Netzwerk `pixelhort`, `PUID`/`PGID` 99:100). Die Images werden per
+GitHub Actions nach `ghcr.io/gottschalkfelix4-source/pixelhort-*` veröffentlicht.
+
 ### ML auf einem anderen Rechner
 
 Auf dem ML-Rechner:
@@ -90,6 +96,7 @@ URL im Admin-Bereich unter Einstellungen → ML eintragen. GPU-Build:
 | `PH_BACKUP_CRON`, `PH_BACKUP_KEEP` | `0 0 2 * * *`, `14` | DB-Backup (Cron mit Sekundenfeld) |
 | `PH_REVERSE_GEOCODING` | `true` | GeoNames-Daten laden (~10 MB) |
 | `PH_WEB_DIR` | `/app/web` | Gebaute Web-App |
+| `PUID` / `PGID` | `10001` | Benutzer, unter dem Server und ML-Dienst laufen (Unraid: 99/100) |
 
 Alle Laufzeit-Einstellungen (ML-Schwellen, OAuth, Backup, Video, Papierkorb)
 lassen sich zusätzlich unter `/api/admin/config` bzw. in der Admin-Oberfläche ändern.

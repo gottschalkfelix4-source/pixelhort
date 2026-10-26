@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>pixelhort-db</Name>
+  <Repository>pgvector/pgvector:pg16</Repository>
+  <Registry>https://hub.docker.com/r/pgvector/pgvector</Registry>
+  <Network>pixelhort</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/gottschalkfelix4-source/pixelhort/issues</Support>
+  <Project>https://github.com/pgvector/pgvector</Project>
+  <Overview>PostgreSQL 16 mit der Erweiterung pgvector – Datenbank für Pixelhort (Metadaten, Alben, Gesichts- und CLIP-Vektoren).&#xD;
+Pixelhort erstellt die Tabellen beim ersten Start selbst und sichert die Datenbank automatisch (pg_dump) in seinen Datenordner.</Overview>
+  <Category>Tools: MediaApp:Photos</Category>
+  <WebUI/>
+  <TemplateURL>https://raw.githubusercontent.com/gottschalkfelix4-source/pixelhort/main/unraid/pixelhort-db.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/gottschalkfelix4-source/pixelhort/main/unraid/pixelhort.png</Icon>
+  <ExtraParams>--shm-size=256m</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires>Docker-Netzwerk "pixelhort" (docker network create pixelhort).</Requires>
+  <Config Name="Datenbank-Ordner" Target="/var/lib/postgresql/data" Default="/mnt/cache/appdata/pixelhort-db" Mode="rw" Description="Datenbankdateien. Möglichst auf dem Cache-Pool (/mnt/cache/...) statt /mnt/user ablegen." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/pixelhort-db</Config>
+  <Config Name="POSTGRES_USER" Target="POSTGRES_USER" Default="pixelhort" Mode="" Description="Datenbank-Benutzer." Type="Variable" Display="always" Required="true" Mask="false">pixelhort</Config>
+  <Config Name="POSTGRES_PASSWORD" Target="POSTGRES_PASSWORD" Default="pixelhort" Mode="" Description="Datenbank-Passwort – bitte ändern und in der Datenbank-URL des Containers pixelhort übernehmen." Type="Variable" Display="always" Required="true" Mask="true">pixelhort</Config>
+  <Config Name="POSTGRES_DB" Target="POSTGRES_DB" Default="pixelhort" Mode="" Description="Datenbankname." Type="Variable" Display="always" Required="true" Mask="false">pixelhort</Config>
+  <Config Name="Port (optional)" Target="5432" Default="" Mode="tcp" Description="Nur nötig, wenn die Datenbank außerhalb des Netzwerks pixelhort erreichbar sein soll." Type="Port" Display="advanced" Required="false" Mask="false"/>
+</Container>

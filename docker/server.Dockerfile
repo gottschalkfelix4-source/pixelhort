@@ -34,18 +34,22 @@ RUN apt-get update \
       > /etc/apt/sources.list.d/pgdg.list \
  && apt-get update && apt-get install -y --no-install-recommends postgresql-client-16 \
  && apt-get purge -y gnupg && apt-get autoremove -y && rm -rf /var/lib/apt/lists/* \
- && useradd --system --uid 10001 --home-dir /data pixelhort \
- && mkdir -p /data && chown pixelhort /data
+ && mkdir -p /data
 COPY --from=build /out/pixelhort-server /usr/local/bin/pixelhort-server
 COPY --from=build /out/pixelhort /usr/local/bin/pixelhort
 COPY --from=web /web/dist /app/web
+COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+# The entrypoint starts as root only to fix ownership of /data, then runs the
+# server as PUID:PGID (Unraid: 99:100).
 ENV PH_DATA_DIR=/data \
     PH_WEB_DIR=/app/web \
     PH_LISTEN=0.0.0.0:2342 \
-    PH_METRICS_LISTEN=0.0.0.0:9464
-USER pixelhort
+    PH_METRICS_LISTEN=0.0.0.0:9464 \
+    PH_WRITABLE_DIRS=/data \
+    PUID=10001 \
+    PGID=10001
 VOLUME ["/data"]
 EXPOSE 2342 9464
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
   CMD ["curl", "-fsS", "http://127.0.0.1:2342/api/server/ping"]
-ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/pixelhort-server"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh", "/usr/local/bin/pixelhort-server"]

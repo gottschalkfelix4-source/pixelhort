@@ -29,17 +29,21 @@ FROM ${RUNTIME_IMAGE}
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates libstdc++6 \
  && rm -rf /var/lib/apt/lists/* \
- && useradd --system --uid 10001 --home-dir /cache pixelhort \
- && mkdir -p /cache && chown pixelhort /cache
+ && mkdir -p /cache
 COPY --from=build /out/lib/ /usr/local/lib/pixelhort-ml/
 COPY --from=build /out/pixelhort-ml /usr/local/bin/pixelhort-ml
+COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+# The entrypoint starts as root only to fix ownership of /cache, then runs the
+# service as PUID:PGID (Unraid: 99:100).
 ENV LD_LIBRARY_PATH=/usr/local/lib/pixelhort-ml \
     PH_ML_LISTEN=0.0.0.0:3003 \
     PH_ML_CACHE_DIR=/cache \
-    RUST_LOG=info,ort=warn
-USER pixelhort
+    RUST_LOG=info,ort=warn \
+    PH_WRITABLE_DIRS=/cache \
+    PUID=10001 \
+    PGID=10001
 VOLUME ["/cache"]
 EXPOSE 3003
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
   CMD ["/bin/sh", "-c", "exec 3<>/dev/tcp/127.0.0.1/3003 && printf 'GET /ping HTTP/1.0\r\n\r\n' >&3 && grep -q pong <&3"]
-ENTRYPOINT ["/usr/local/bin/pixelhort-ml"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh", "/usr/local/bin/pixelhort-ml"]

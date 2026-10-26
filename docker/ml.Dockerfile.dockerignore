@@ -3,3 +3,4 @@
 !crates/ml/Cargo.toml
 !crates/ml/Cargo.lock
 !crates/ml/src
+!docker/entrypoint.sh
