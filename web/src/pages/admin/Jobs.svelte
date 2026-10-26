@@ -23,6 +23,20 @@
     return () => clearInterval(id);
   });
 
+  let errors = $state<Record<string, { assetId: string | null; fileName: string | null; error: string | null }[] | undefined>>({});
+
+  async function toggleErrors(queue: string) {
+    if (errors[queue]) {
+      errors[queue] = undefined;
+      return;
+    }
+    try {
+      errors[queue] = await api.failedJobs(queue);
+    } catch (e) {
+      toastError(e);
+    }
+  }
+
   const queues = $derived([...new Set([...JOB_QUEUES, ...Object.keys(jobs)])]);
 
   async function cmd(queue: string, command: JobCommand, force = false) {
@@ -67,8 +81,16 @@
         {#if (s?.failed ?? 0) > 0}
           <button class="btn small" onclick={() => cmd(q, 'retry-failed')}><Icon name="refresh" size={16} /> {t('jobRetryFailed')}</button>
           <button class="btn small danger" onclick={() => cmd(q, 'clear-failed')}>{t('jobClearFailed')}</button>
+          <button class="btn small" onclick={() => toggleErrors(q)}>{errors[q] ? t('jobHideErrors') : t('jobShowErrors')}</button>
         {/if}
       </div>
+      {#if errors[q]}
+        <ul class="errors">
+          {#each errors[q] ?? [] as e, i (i)}
+            <li><strong>{e.fileName ?? e.assetId ?? '–'}</strong><code>{e.error}</code></li>
+          {/each}
+        </ul>
+      {/if}
     </div>
   {/each}
 </div>
@@ -117,6 +139,30 @@
   }
   .stats .err strong {
     color: var(--danger);
+  }
+  .errors {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 320px;
+    overflow: auto;
+    font-size: 0.8rem;
+  }
+  .errors li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-soft);
+  }
+  .errors code {
+    color: var(--fg-muted);
+    white-space: pre-wrap;
+    word-break: break-word;
   }
   .badge.live {
     background: var(--primary-soft);

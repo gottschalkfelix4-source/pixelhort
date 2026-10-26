@@ -28,6 +28,7 @@
   let tx = $state(0);
   let ty = $state(0);
   let hiRes = $state(false);
+  let brokenSrc = $state('');
 
   const asset = $derived<AssetDto | undefined>(ctx?.assets[index]);
   const current = $derived(detail && asset && detail.id === asset.id ? detail : asset);
@@ -402,7 +403,17 @@
             </div>
           {:else}
             <div class="zoom" style="transform: translate({tx}px, {ty}px) scale({scale})">
-              <img class="media" src={hiRes ? fullSrc : previewSrc} alt={current.originalFileName} draggable="false" />
+              {#if brokenSrc === (hiRes ? fullSrc : previewSrc)}
+                <div class="no-preview"><Icon name="photo" size={48} /><span>{t('previewUnavailable')}</span><small>{current.originalFileName}</small></div>
+              {:else}
+                <img
+                  class="media"
+                  src={hiRes ? fullSrc : previewSrc}
+                  alt={current.originalFileName}
+                  draggable="false"
+                  onerror={(e) => (brokenSrc = (e.currentTarget as HTMLImageElement).getAttribute('src') ?? '')}
+                />
+              {/if}
               {#if liveOn && current.livePhotoVideoId}
                 <video
                   class="media live"
@@ -561,6 +572,14 @@
     overflow: hidden;
     touch-action: none;
     user-select: none;
+  }
+  .no-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
   }
   .zoom {
     width: 100%;

@@ -709,6 +709,8 @@ export const api = {
   deleteBackup: (name: string) => del<void>(`/admin/backups/${encodeURIComponent(name)}`),
   jobs: () => get<Record<string, QueueStatus>>('/jobs'),
   jobCommand: (queue: string, command: JobCommand, force = false) => post<void>(`/jobs/${queue}`, { command, force }),
+  failedJobs: (queue: string) =>
+    get<{ assetId: Uuid | null; fileName: string | null; error: string | null; attempts: number }[]>(`/jobs/${queue}/failed`),
 
   // Server
   ping: () => get<{ res: string }>('/server/ping', undefined, { silent: true }),

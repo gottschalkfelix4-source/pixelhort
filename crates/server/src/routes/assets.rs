@@ -701,10 +701,28 @@ async fn thumbnail(
 ) -> AppResult<Response> {
     let asset = get_asset(&state.db, id).await?;
     require_read(&state, &p, &asset).await?;
-    let path = match q.size.as_deref() {
-        Some("preview") | Some("fullsize") => asset.preview_path.or(asset.thumbnail_path),
-        _ => asset.thumbnail_path.or(asset.preview_path),
-    };
+    let preview = matches!(q.size.as_deref(), Some("preview") | Some("fullsize"));
+    let pick = |a: AssetRow| if preview { a.preview_path.or(a.thumbnail_path) } else { a.thumbnail_path.or(a.preview_path) };
+    let exists = |p: &Option<String>| p.as_deref().is_some_and(|p| std::path::Path::new(p).exists());
+    let mut path = pick(asset);
+    // The viewer asks for one preview at a time: render it right away instead of waiting
+    // for the (possibly long) thumbnail queue. Grid thumbnails stay queued.
+    if preview && !exists(&path) {
+        static RENDER: std::sync::LazyLock<tokio::sync::Semaphore> = std::sync::LazyLock::new(|| tokio::sync::Semaphore::new(2));
+        let _permit = RENDER.acquire().await.map_err(|e| AppError::Internal(e.into()))?;
+        path = pick(get_asset(&state.db, id).await?);
+        if !exists(&path) {
+            if let Err(e) = thumbnails::run(&state, id).await {
+                tracing::warn!(asset = %id, "on-demand preview failed: {e:#}");
+                return Err(AppError::not_found());
+            }
+            sqlx::query("DELETE FROM jobs WHERE queue = 'thumbnails' AND asset_id = $1 AND status <> 'active'")
+                .bind(id)
+                .execute(&state.db)
+                .await?;
+            path = pick(get_asset(&state.db, id).await?);
+        }
+    }
     let path = path.ok_or_else(AppError::not_found)?;
     serve(&path, req, Some("image/jpeg"), None).await
 }

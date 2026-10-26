@@ -25,6 +25,7 @@ pub fn router() -> Router<SharedState> {
         .route("/admin/backups/{name}", get(download_backup).delete(delete_backup))
         .route("/jobs", get(job_status))
         .route("/jobs/{queue}", post(job_command))
+        .route("/jobs/{queue}/failed", get(failed_jobs))
 }
 
 async fn info(State(state): State<SharedState>) -> Json<ServerInfo> {
@@ -196,6 +197,23 @@ async fn job_status(State(state): State<SharedState>, _a: Auth) -> AppResult<Jso
         );
     }
     Ok(Json(Value::Object(out)))
+}
+
+/// The most recent failed jobs of a queue with their error.
+async fn failed_jobs(State(state): State<SharedState>, _a: AdminAuth, Path(queue): Path<String>) -> AppResult<Json<Value>> {
+    let rows: Vec<(Option<uuid::Uuid>, Option<String>, Option<String>, i32)> = sqlx::query_as(
+        "SELECT j.asset_id, a.original_file_name, j.error, j.attempts
+         FROM jobs j LEFT JOIN assets a ON a.id = j.asset_id
+         WHERE j.queue = $1 AND j.status = 'failed' ORDER BY j.id DESC LIMIT 50",
+    )
+    .bind(&queue)
+    .fetch_all(&state.db)
+    .await?;
+    let list: Vec<Value> = rows
+        .into_iter()
+        .map(|(id, name, error, attempts)| json!({ "assetId": id, "fileName": name, "error": error, "attempts": attempts }))
+        .collect();
+    Ok(Json(Value::Array(list)))
 }
 
 #[derive(Deserialize)]
