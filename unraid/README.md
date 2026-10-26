@@ -69,6 +69,20 @@ denselben Key eintragen. Mit NVIDIA-GPU das Repository auf `…/pixelhort-ml:lat
 ändern, das Nvidia-Driver-Plugin installieren und `--runtime=nvidia` als Extra
 Parameter sowie `NVIDIA_VISIBLE_DEVICES` setzen.
 
+## Casting auf Fernseher (DLNA)
+
+Smart-TVs werden per SSDP-Multicast gesucht. Aus dem Bridge-Netzwerk `pixelhort`
+erreicht dieser Multicast das Heimnetz nicht. Zwei Möglichkeiten:
+
+- Fernseher im Viewer unter *Streamen → Gerät per Adresse hinzufügen* mit seiner
+  UPnP-Beschreibungs-URL eintragen, z. B. `http://192.168.1.20:9197/dmr` (Samsung)
+  oder `http://192.168.1.21:1255/` (LG). Das Gerät wird gespeichert.
+- Oder den Container `pixelhort` im Netzwerkmodus `host` betreiben; dann findet
+  „Erneut suchen“ die Geräte automatisch.
+
+In beiden Fällen `PH_PUBLIC_URL` auf die LAN-Adresse des Servers setzen
+(z. B. `http://192.168.1.10:2342`), damit der Fernseher die Medien abrufen kann.
+
 ## Rechte
 
 Alle Pixelhort-Container laufen als `PUID`/`PGID` (Standard 99:100 = nobody:users).

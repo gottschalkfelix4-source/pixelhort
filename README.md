@@ -35,7 +35,7 @@ einen anderen Rechner (z. B. mit GPU) ausgelagert werden.
 | Gesperrter Ordner | PIN (argon2), Session-Entsperrung für 15 Min.; gesperrte Assets verschwinden aus Suche, Alben, Freigaben, Partnern |
 | Mehrere Benutzer | Admin-Verwaltung, Speicherkontingente, API-Keys |
 | Geteilte Alben, Partner, öffentliche Links | Rollen Editor/Betrachter, Kommentare/Likes, Partner-Timeline, Links mit Passwort/Ablauf/Download/Upload |
-| Casting auf TV | Signierte, kurzlebige Cast-URLs; Google Cast (Web, Android), AirPlay (iOS) |
+| Casting auf TV | DLNA/UPnP für Smart-TVs und Mediaplayer (Server findet Geräte per SSDP, Steuerung per AVTransport), Google Cast (Web, Android), AirPlay (iOS); signierte, kurzlebige Cast-URLs |
 | OAuth-Login | OpenID Connect mit PKCE, Auto-Registrierung, Web- und Mobile-Redirect |
 | Automatisches DB-Backup | `pg_dump` + gzip nach Cron-Ausdruck, Aufbewahrung der letzten N Backups, Download im Admin-Bereich |
 | REST-API & Prometheus | Dokumentiert in [docs/API.md](docs/API.md); Metriken auf Port 9464 (`/metrics`), ML-Dienst ebenfalls mit `/metrics` |

@@ -3,6 +3,7 @@
 mod access;
 mod auth;
 mod config;
+mod dlna;
 mod error;
 mod geocode;
 mod jobs;
@@ -83,6 +84,7 @@ async fn main() -> anyhow::Result<()> {
         jobs,
         storage,
         geocoder: Geocoder::default(),
+        dlna: dlna::Dlna::default(),
         metrics,
         clip_text_cache: Mutex::new(HashMap::new()),
     });
@@ -94,6 +96,11 @@ async fn main() -> anyhow::Result<()> {
                 tracing::warn!("reverse geocoding unavailable: {e:#}");
             }
         });
+    }
+
+    {
+        let s = state.clone();
+        tokio::spawn(async move { routes::cast::restore_devices(&s).await });
     }
 
     if config.workers {

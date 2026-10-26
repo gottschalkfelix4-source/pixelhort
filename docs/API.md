@@ -319,6 +319,22 @@ Partner assets are read-only for the partner, never include `archive`, `hidden` 
 Asset media of a share is fetched with the same `?key=K[&shareToken=T]` query
 parameters on `/api/assets/{id}/thumbnail|original|video`.
 
+## Casting to TVs (DLNA/UPnP)
+
+Smart TVs and media players that act as DLNA media renderers. The server discovers
+them via SSDP and tells them to fetch the media through a signed cast URL
+(`PH_PUBLIC_URL`, otherwise the server's LAN address towards the device).
+
+| Method | Path | Body | Response |
+|---|---|---|---|
+| GET | `/api/cast/devices?refresh=true` | – (refresh forces a new SSDP search, otherwise cached 60 s) | `[{"id","name","manufacturer","model","location"}]` |
+| POST | `/api/cast/devices` | `{"location":"http://192.168.1.20:9197/dmr"}` – add a renderer by its UPnP description URL (remembered across restarts) | device |
+| POST | `/api/cast/devices/{id}/play` | `{"assetId"}` | `{"device","url","mimeType"}` |
+| POST | `/api/cast/devices/{id}/stop` | – | `{"state":"STOPPED"}` |
+| GET | `/api/cast/devices/{id}/status` | – | `{"state":"PLAYING"\|"STOPPED"\|"PAUSED_PLAYBACK"\|"TRANSITIONING"}` |
+
+Google Cast (web/Android) and AirPlay (iOS) use `POST /api/assets/{id}/cast-url` instead.
+
 ## Activity stream for shared albums (optional, likes/comments)
 
 | Method | Path | Body | Response |

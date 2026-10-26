@@ -76,7 +76,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: PostgreSQL with pgvector
         run: |
-          brew install postgresql@17 pgvector exiftool xcodegen
+          brew install postgresql@17 pgvector exiftool xcodegen libheif
+          which heif-convert heif-dec || true
           PG="$(brew --prefix postgresql@17)/bin"
           echo "$PG" >> "$GITHUB_PATH"
           brew services start postgresql@17
@@ -140,6 +141,17 @@ jobs:
           for a in d: print(a["originalFileName"], a["type"], a["deviceId"], a["width"], "x", a["height"])
           assert len(d) >= 3, "expected at least 3 uploaded assets"
           assert all(a["deviceId"] for a in d), "uploads must carry the device id"'
+          # Every upload (incl. HEIC) must get a preview once the jobs are done.
+          for i in $(seq 1 60); do
+            MISSING=$(curl -fs "localhost:2342/api/sync/delta?updatedAfter=2000-01-01T00:00:00Z" -H "Authorization: Bearer $T"               | python3 -c 'import json,sys; print(sum(1 for a in json.load(sys.stdin)["upserted"] if not a["thumbhash"]))')
+            [ "$MISSING" = "0" ] && break
+            sleep 2
+          done
+          echo "assets without preview: $MISSING"
+          test "$MISSING" = "0"
+          H=$(curl -fs "localhost:2342/api/sync/delta?updatedAfter=2000-01-01T00:00:00Z" -H "Authorization: Bearer $T"             | python3 -c 'import json,sys; print(next(a["id"] for a in json.load(sys.stdin)["upserted"] if a["originalFileName"].upper().endswith(".HEIC")))')
+          curl -fs -o heic-preview.jpg "localhost:2342/api/assets/$H/thumbnail?size=preview" -H "Authorization: Bearer $T"
+          file heic-preview.jpg | grep -q JPEG && echo "HEIC preview OK: $(file heic-preview.jpg)"
       - if: always()
         uses: actions/upload-artifact@v4
         with:

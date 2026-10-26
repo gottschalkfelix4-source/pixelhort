@@ -5,9 +5,9 @@
   import SphereViewer from './SphereViewer.svelte';
   import Pickers from './Pickers.svelte';
   import ShareLinkDialog from './ShareLinkDialog.svelte';
+  import CastDialog from './CastDialog.svelte';
   import { api, originalUrl, thumbnailUrl, videoUrl, type AssetDto } from '../lib/api';
   import { auth, bumpAssets, closeViewer, confirmDialog, toast, toastError, viewer } from '../lib/state.svelte';
-  import { castAsset, CastUnavailableError } from '../lib/cast';
   import { formatLocal, isWebImage, triggerDownload } from '../lib/utils';
   import { t } from '../lib/i18n';
 
@@ -160,16 +160,10 @@
     triggerDownload(originalUrl(current.id, share, current.hasEdits), current.originalFileName);
   }
 
-  async function cast() {
-    if (!current) return;
-    try {
-      const device = await castAsset(current);
-      toast(t('castStarted', { device }), 'success');
-    } catch (e) {
-      if (e instanceof CastUnavailableError) toast(t('castUnavailable'), 'error', 5000);
-      else if (e && typeof e === 'object' && 'code' in e && (e as { code: string }).code === 'cancel') return;
-      else toast(t('castFailed'), 'error');
-    }
+  let showCast = $state(false);
+
+  function cast() {
+    if (current) showCast = true;
   }
 
   function toggleInfo() {
@@ -469,6 +463,9 @@
   {/if}
   {#if sharing}
     <ShareLinkDialog assetIds={[current.id]} onclose={() => (sharing = false)} />
+  {/if}
+  {#if showCast}
+    <CastDialog asset={current} onclose={() => (showCast = false)} />
   {/if}
 {/if}
 

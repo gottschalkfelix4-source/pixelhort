@@ -22,6 +22,7 @@ pub struct AppState {
     pub jobs: JobQueue,
     pub storage: Storage,
     pub geocoder: Geocoder,
+    pub dlna: crate::dlna::Dlna,
     pub metrics: Option<PrometheusHandle>,
     /// Cache of CLIP text embeddings for recent search queries.
     pub clip_text_cache: Mutex<HashMap<String, Vec<f32>>>,

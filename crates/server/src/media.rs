@@ -206,7 +206,11 @@ async fn decode_file(path: PathBuf) -> anyhow::Result<DynamicImage> {
 
 async fn heif_convert(path: &Path) -> anyhow::Result<DynamicImage> {
     let tmp = std::env::temp_dir().join(format!("ph-{}.jpg", uuid::Uuid::new_v4()));
-    let res = run("heif-convert", os_args!["-q", "92", path.as_os_str(), tmp.as_os_str()]).await;
+    // libheif ≥ 1.17 ships the tool as `heif-dec`; older releases call it `heif-convert`.
+    let mut res = run("heif-convert", os_args!["-q", "92", path.as_os_str(), tmp.as_os_str()]).await;
+    if res.is_err() {
+        res = run("heif-dec", os_args!["-q", "92", path.as_os_str(), "-o", tmp.as_os_str()]).await;
+    }
     let img = match res {
         Ok(_) => decode_file(tmp.clone()).await,
         Err(e) => Err(e),

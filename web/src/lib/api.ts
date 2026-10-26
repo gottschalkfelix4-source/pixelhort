@@ -266,6 +266,15 @@ export interface CastUrl {
   imageUrl: string;
 }
 
+/** DLNA/UPnP media renderer (smart TV, media player) found on the server's network. */
+export interface CastDevice {
+  id: string;
+  name: string;
+  manufacturer: string | null;
+  model: string | null;
+  location: string;
+}
+
 export interface AssetStatistics {
   images: number;
   videos: number;
@@ -680,6 +689,11 @@ export const api = {
     put<AssetDto>(`/assets/${id}/edits`, saveAsCopy ? { ...edits, saveAsCopy: true } : edits),
   revertEdits: (id: Uuid) => del<AssetDto>(`/assets/${id}/edits`),
   castUrl: (id: Uuid) => post<CastUrl>(`/assets/${id}/cast-url`),
+  castDevices: (refresh = false) => get<CastDevice[]>('/cast/devices', refresh ? { refresh: true } : undefined),
+  castAddDevice: (location: string) => post<CastDevice>('/cast/devices', { location }),
+  castPlay: (deviceId: string, assetId: Uuid) =>
+    post<{ device: string }>(`/cast/devices/${encodeURIComponent(deviceId)}/play`, { assetId }),
+  castStop: (deviceId: string) => post<{ state: string }>(`/cast/devices/${encodeURIComponent(deviceId)}/stop`),
   assetStatistics: () => get<AssetStatistics>('/assets/statistics'),
   randomAssets: (count = 10) => get<AssetDto[]>('/assets/random', { count }),
 
