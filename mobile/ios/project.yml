@@ -87,12 +87,33 @@ targets:
               - app.pixelhort
         PHPhotoLibraryPreventAutomaticLimitedAccessAlert: true
 
+  PixelhortUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PixelhortUITests
+    dependencies:
+      - target: Pixelhort
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.pixelhort.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Pixelhort
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+
 schemes:
   Pixelhort:
     build:
       targets:
         Pixelhort: all
+        PixelhortUITests: [test]
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - PixelhortUITests
     archive:
       config: Release

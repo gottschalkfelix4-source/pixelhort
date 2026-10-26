@@ -48,11 +48,13 @@ struct SettingsScreen: View {
                         Text(backup.settings.isEnabled ? LocalizedStringKey("common.on") : LocalizedStringKey("common.off"))
                     }
                 }
+                .accessibilityIdentifier("settings.backupOptions")
                 NavigationLink {
                     BackupProgressView()
                 } label: {
                     Label("backup.title", systemImage: "icloud.and.arrow.up")
                 }
+                .accessibilityIdentifier("settings.backupProgress")
             }
 
             Section("settings.display") {

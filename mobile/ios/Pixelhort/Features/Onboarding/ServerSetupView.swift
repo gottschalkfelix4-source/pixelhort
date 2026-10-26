@@ -33,6 +33,7 @@ struct ServerSetupView: View {
                     .autocorrectionDisabled()
                     .submitLabel(.continue)
                     .onSubmit { Task { await check() } }
+                    .accessibilityIdentifier("server.url")
             } header: {
                 Text("onboarding.server.title")
             } footer: {
@@ -54,6 +55,7 @@ struct ServerSetupView: View {
                     }
                 }
                 .disabled(urlText.trimmingCharacters(in: .whitespaces).isEmpty || isChecking)
+                .accessibilityIdentifier("server.connect")
             }
         }
         .navigationTitle("Pixelhort")

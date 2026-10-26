@@ -36,10 +36,12 @@ struct LoginView: View {
                         .textContentType(.username)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .accessibilityIdentifier("login.email")
                     SecureField("login.password", text: $password)
                         .textContentType(.password)
                         .submitLabel(.go)
                         .onSubmit { Task { await login() } }
+                        .accessibilityIdentifier("login.password")
                     Button {
                         Task { await login() }
                     } label: {
@@ -50,6 +52,7 @@ struct LoginView: View {
                         }
                     }
                     .disabled(email.isEmpty || password.isEmpty || isWorking)
+                    .accessibilityIdentifier("login.submit")
                 }
             }
 

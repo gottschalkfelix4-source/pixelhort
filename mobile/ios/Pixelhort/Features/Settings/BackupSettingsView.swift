@@ -26,6 +26,7 @@ struct BackupSettingsView: View {
                         }
                     }
                 ))
+                .accessibilityIdentifier("backup.enabledToggle")
             } footer: {
                 Text("backup.enabled.footer")
             }

@@ -65,3 +65,70 @@ jobs:
           xcodebuild -project Pixelhort.xcodeproj -scheme Pixelhort \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Debug CODE_SIGNING_ALLOWED=NO -quiet build
+
+  # Runs the iOS app in the simulator against a real server: login, photo backup, timeline.
+  ios-e2e:
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: PostgreSQL with pgvector
+        run: |
+          brew install postgresql@17 pgvector exiftool xcodegen
+          PG="$(brew --prefix postgresql@17)/bin"
+          echo "$PG" >> "$GITHUB_PATH"
+          brew services start postgresql@17
+          for i in $(seq 1 60); do "$PG/pg_isready" -h localhost && break; sleep 1; done
+          "$PG/createdb" -h localhost pixelhort
+      - name: Start Pixelhort server
+        run: |
+          cargo build -p pixelhort-server
+          mkdir -p "$RUNNER_TEMP/phdata"
+          PH_DATABASE_URL="postgres://$USER@localhost:5432/pixelhort" PH_DATA_DIR="$RUNNER_TEMP/phdata" \
+            PH_REVERSE_GEOCODING=false PH_METRICS_LISTEN=off \
+            nohup target/debug/pixelhort-server > "$RUNNER_TEMP/server.log" 2>&1 &
+          for i in $(seq 1 90); do curl -fs localhost:2342/api/server/ping && break; sleep 2; done
+          TOKEN=$(curl -fs -X POST localhost:2342/api/auth/setup -H 'content-type: application/json' \
+            -d '{"email":"admin@example.com","password":"supersecret1","name":"Admin"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["accessToken"])')
+          curl -fs -X POST localhost:2342/api/admin/users -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+            -d '{"email":"ios@example.com","password":"iostester1","name":"iOS Tester"}'
+      - name: Boot simulator and add photos
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["devices"]
+          ids=[x["udid"] for rt,l in sorted(d.items(), reverse=True) if "iOS" in rt for x in l if x["name"].startswith("iPhone")]
+          print(ids[0])')
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl addmedia "$UDID" tests/fixtures/*.jpg
+          xcrun simctl privacy "$UDID" grant photos app.pixelhort || true
+      - name: UI test (login, backup, timeline)
+        working-directory: mobile/ios
+        env:
+          TEST_RUNNER_PH_TEST_SERVER: http://localhost:2342
+          TEST_RUNNER_PH_TEST_MIN_ASSETS: "3"
+        run: |
+          xcodegen generate
+          xcodebuild test -project Pixelhort.xcodeproj -scheme Pixelhort -destination "id=$UDID" \
+            -resultBundlePath "$RUNNER_TEMP/ui-tests.xcresult" CODE_SIGNING_ALLOWED=NO -quiet
+      - name: Verify uploads on the server
+        run: |
+          T=$(curl -fs -X POST localhost:2342/api/auth/login -H 'content-type: application/json' \
+            -d '{"email":"ios@example.com","password":"iostester1"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["accessToken"])')
+          curl -fs "localhost:2342/api/sync/delta?updatedAfter=2000-01-01T00:00:00Z" -H "Authorization: Bearer $T" | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["upserted"]
+          for a in d: print(a["originalFileName"], a["type"], a["deviceId"], a["width"], "x", a["height"])
+          assert len(d) >= 3, "expected at least 3 uploaded assets"
+          assert all(a["deviceId"] for a in d), "uploads must carry the device id"'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-e2e-results
+          path: |
+            ${{ runner.temp }}/ui-tests.xcresult
+            ${{ runner.temp }}/server.log

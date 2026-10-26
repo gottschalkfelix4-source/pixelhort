@@ -66,6 +66,7 @@ struct BackupProgressView: View {
                           systemImage: backup.isRunning ? "stop.circle" : "arrow.clockwise.icloud")
                 }
                 .disabled(!backup.settings.isEnabled)
+                .accessibilityIdentifier("backup.startNow")
             }
 
             if !backup.recentUploads.isEmpty {

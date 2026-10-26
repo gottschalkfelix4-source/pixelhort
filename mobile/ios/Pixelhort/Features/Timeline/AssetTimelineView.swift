@@ -339,6 +339,9 @@ struct AssetGridCell: View {
             }
             .scaleEffect(isSelected ? 0.94 : 1)
             .animation(.easeOut(duration: 0.12), value: isSelected)
+            .accessibilityElement(children: .ignore)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("timeline.asset")
     }
 }
 
