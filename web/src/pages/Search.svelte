@@ -1,4 +1,5 @@
 <script lang="ts">
+  import EmptyState from '../components/EmptyState.svelte';
   import AssetGrid from '../components/AssetGrid.svelte';
   import SelectionBar from '../components/SelectionBar.svelte';
   import SearchFilterDialog from '../components/SearchFilterDialog.svelte';
@@ -116,11 +117,11 @@
     </div>
   {/if}
   {#if !q && !chips.length}
-    <div class="empty">{t('smartSearchHint')}</div>
+    <EmptyState icon="search" title={t('search')} text={t('smartSearchHint')} />
   {:else if loading && !assets.length}
     <div class="spinner"></div>
   {:else if searched && !assets.length}
-    <div class="empty">{t('noResults')}</div>
+    <EmptyState icon="search" title={t('noResults')} text={t('noResultsHint')} />
   {:else}
     <p class="muted small">{t('resultsCount', { n: total })}</p>
     <AssetGrid {assets} {selection} groupByDay={false} />

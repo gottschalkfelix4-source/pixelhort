@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from '../components/Icon.svelte';
+  import EmptyState from '../components/EmptyState.svelte';
   import { api, type TagDto } from '../lib/api';
   import { confirmDialog, promptDialog, toastError } from '../lib/state.svelte';
   import { t } from '../lib/i18n';
@@ -90,23 +91,30 @@
   {#if loading && !tags.length}
     <div class="spinner"></div>
   {:else if !tags.length}
-    <div class="empty">{t('noTags')}</div>
+    <EmptyState icon="tag" title={t('noTags')} text={t('noTagsHint')}>
+      <button class="btn primary" onclick={() => create()}><Icon name="add" size={20} /> {t('newTag')}</button>
+    </EmptyState>
   {:else}
     <ul class="tree">
       {#each tree as n (n.tag.id)}
-        <li style="padding-left: {n.depth * 24 + 8}px">
-          <input
-            type="color"
-            class="color"
-            value={n.tag.color || '#9aa0a6'}
-            onchange={(e) => setColor(n.tag, (e.currentTarget as HTMLInputElement).value)}
-            title={t('color')}
-          />
+        <li style="--depth: {n.depth}">
+          {#if n.depth}<span class="branch" aria-hidden="true"></span>{/if}
+          <label class="swatch" style="--c: {n.tag.color || '#9aa0a6'}" title={t('color')}>
+            <Icon name="tag" size={20} />
+            <input
+              type="color"
+              value={n.tag.color || '#9aa0a6'}
+              onchange={(e) => setColor(n.tag, (e.currentTarget as HTMLInputElement).value)}
+              aria-label={t('color')}
+            />
+          </label>
           <a href="/tags/{n.tag.id}" class="name">{n.tag.name || n.tag.value}</a>
-          <span class="muted small">{n.tag.assetCount}</span>
+          <span class="badge">{n.tag.assetCount}</span>
           <span class="spacer"></span>
-          <button class="icon-btn" title={t('newTag')} aria-label={t('newTag')} onclick={() => create(n.tag)}><Icon name="add" size={20} /></button>
-          <button class="icon-btn" title={t('delete')} aria-label={t('delete')} onclick={() => remove(n.tag)}><Icon name="delete" size={20} /></button>
+          <div class="acts">
+            <button class="icon-btn" title={t('newTag')} aria-label={t('newTag')} onclick={() => create(n.tag)}><Icon name="add" size={20} /></button>
+            <button class="icon-btn" title={t('delete')} aria-label={t('delete')} onclick={() => remove(n.tag)}><Icon name="delete" size={20} /></button>
+          </div>
         </li>
       {/each}
     </ul>
@@ -116,28 +124,75 @@
 <style>
   .tree {
     list-style: none;
-    padding: 0;
+    padding: 6px;
     margin: 0;
-    max-width: 720px;
+    max-width: 760px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elev);
   }
   .tree li {
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-height: 48px;
-    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 6px 0 calc(10px + var(--depth) * 28px);
+    border-radius: 12px;
+    position: relative;
+    transition: background 0.12s;
   }
-  .color {
-    width: 22px;
-    height: 22px;
-    border: none;
-    padding: 0;
-    background: none;
+  .tree li:hover {
+    background: var(--bg-hover);
+  }
+  .branch {
+    position: absolute;
+    left: calc(var(--depth) * 28px - 6px);
+    top: 0;
+    width: 12px;
+    height: 50%;
+    border-left: 1.5px solid var(--border-strong);
+    border-bottom: 1.5px solid var(--border-strong);
+    border-bottom-left-radius: 6px;
+  }
+  .swatch {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 16%, transparent);
     cursor: pointer;
-    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .swatch input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
   }
   .name {
     color: var(--fg);
-    font-weight: 500;
+    font-weight: 600;
+  }
+  .name:hover {
+    color: var(--primary);
+  }
+  .acts {
+    display: flex;
+    opacity: 0.4;
+    transition: opacity 0.15s;
+  }
+  .tree li:hover .acts {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .acts {
+      opacity: 1;
+    }
   }
 </style>

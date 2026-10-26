@@ -1,4 +1,5 @@
 <script lang="ts">
+  import EmptyState from '../components/EmptyState.svelte';
   import Icon from '../components/Icon.svelte';
   import { api, thumbnailUrl, type DuplicateGroup } from '../lib/api';
   import { bumpAssets, openViewer, toast, toastError } from '../lib/state.svelte';
@@ -60,14 +61,13 @@
 
 <div class="page">
   <div class="page-header">
-    <h1>{t('duplicatesTitle')}</h1>
-    <span class="muted small">{groups.length}</span>
+    <h1>{t('duplicatesTitle')} {#if groups.length}<span class="count">{groups.length}</span>{/if}</h1>
   </div>
-  <p class="muted">{t('duplicatesHint')}</p>
+  <p class="page-intro">{t('duplicatesHint')}</p>
   {#if loading && !groups.length}
     <div class="spinner"></div>
   {:else if !groups.length}
-    <div class="empty">{t('noDuplicates')}</div>
+    <EmptyState icon="duplicate" title={t('noDuplicates')} text={t('noDuplicatesHint')} />
   {:else}
     {#each groups as g (g.duplicateId)}
       <div class="card group">

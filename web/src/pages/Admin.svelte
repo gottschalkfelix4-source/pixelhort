@@ -6,6 +6,7 @@
   import Backups from './admin/Backups.svelte';
   import Stats from './admin/Stats.svelte';
   import Icon, { type IconName } from '../components/Icon.svelte';
+  import EmptyState from '../components/EmptyState.svelte';
   import { auth } from '../lib/state.svelte';
   import { t, type MessageKey } from '../lib/i18n';
 
@@ -25,7 +26,7 @@
 <div class="page">
   <div class="page-header"><h1>{t('admin')}</h1></div>
   {#if !auth.user?.isAdmin}
-    <div class="empty">403</div>
+    <EmptyState icon="shield" title="403" />
   {:else}
     <nav class="tabs">
       {#each tabs as x (x.id)}

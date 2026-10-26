@@ -1,4 +1,5 @@
 import { mount } from 'svelte';
+import '@fontsource-variable/overpass';
 import './app.css';
 import App from './App.svelte';
 import { installLinkInterceptor } from './lib/router.svelte';

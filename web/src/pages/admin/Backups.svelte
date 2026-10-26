@@ -1,4 +1,5 @@
 <script lang="ts">
+  import EmptyState from '../../components/EmptyState.svelte';
   import Icon from '../../components/Icon.svelte';
   import { api, backupDownloadUrl, getToken, type BackupDto } from '../../lib/api';
   import { confirmDialog, toast, toastError } from '../../lib/state.svelte';
@@ -62,7 +63,7 @@
   <button class="btn primary" onclick={create}><Icon name="backup" size={20} /> {t('createBackup')}</button>
 </div>
 {#if !backups.length}
-  <div class="empty">{t('noBackups')}</div>
+  <EmptyState icon="backup" title={t('noBackups')} />
 {:else}
   <div class="table-wrap">
     <table class="table">

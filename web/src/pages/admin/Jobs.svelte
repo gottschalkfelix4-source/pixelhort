@@ -37,7 +37,7 @@
 </script>
 
 <div class="row head">
-  <label class="check small"><input type="checkbox" bind:checked={auto} /> {t('autoRefresh')}</label>
+  <label class="check small"><input type="checkbox" class="switch" bind:checked={auto} /> {t('autoRefresh')}</label>
   <span class="spacer"></span>
   <button class="icon-btn" onclick={load} aria-label={t('refresh')}><Icon name="refresh" /></button>
 </div>
@@ -79,14 +79,17 @@
   }
   .jobs {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
   }
   .job {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+    gap: 14px;
+    padding: 20px;
+  }
+  .job h3 {
+    text-transform: capitalize;
   }
   .job.paused {
     opacity: 0.75;
@@ -100,10 +103,13 @@
   .stats div {
     display: flex;
     flex-direction: column;
+    padding: 10px 4px;
+    border-radius: 12px;
+    background: var(--bg-soft);
   }
   .stats strong {
     font-size: 1.3rem;
-    font-weight: 500;
+    font-weight: 700;
   }
   .stats span {
     font-size: 0.72rem;

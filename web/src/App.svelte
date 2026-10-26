@@ -187,8 +187,11 @@
     position: fixed;
     inset: 0;
     z-index: 2000;
-    background: rgba(26, 115, 232, 0.15);
-    border: 4px dashed var(--primary);
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+    backdrop-filter: blur(2px);
+    border: 3px dashed var(--primary);
+    border-radius: 16px;
+    margin: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -197,8 +200,9 @@
   .drop-inner {
     background: var(--bg-elev);
     color: var(--primary);
-    padding: 32px 48px;
-    border-radius: 16px;
+    padding: 36px 56px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
     box-shadow: var(--shadow);
     text-align: center;
     font-size: 1.1rem;

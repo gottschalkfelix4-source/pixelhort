@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from '../components/Icon.svelte';
+  import EmptyState from '../components/EmptyState.svelte';
   import { api, personThumbnailUrl, type PersonDto } from '../lib/api';
   import { confirmDialog, toastError } from '../lib/state.svelte';
   import { t } from '../lib/i18n';
@@ -74,15 +75,17 @@
 
 <div class="page">
   <div class="page-header">
-    <h1>{t('navPeople')}</h1>
-    <span class="muted small">{t('peopleCount', { n: total })}</span>
+    <h1>{t('navPeople')} <span class="count">{t('peopleCount', { n: total })}</span></h1>
     {#if hidden || withHidden}
-      <label class="check small"><input type="checkbox" bind:checked={withHidden} /> {t('showHidden')} ({hidden})</label>
+      <button class="chip" class:active={withHidden} onclick={() => (withHidden = !withHidden)} aria-pressed={withHidden}>
+        <Icon name={withHidden ? 'eye' : 'eyeOff'} size={18} />
+        {t('showHidden')} ({hidden})
+      </button>
     {/if}
     {#if mergeMode}
       <button class="btn primary" disabled={mergeSel.size < 2} onclick={doMerge}><Icon name="merge" size={20} /> {t('merge')} ({mergeSel.size})</button>
       <button class="btn text" onclick={() => ((mergeMode = false), mergeSel.clear())}>{t('cancel')}</button>
-    {:else}
+    {:else if people.length > 1}
       <button class="btn" onclick={() => (mergeMode = true)}><Icon name="merge" size={20} /> {t('merge')}</button>
     {/if}
   </div>
@@ -90,7 +93,7 @@
   {#if loading && !people.length}
     <div class="spinner"></div>
   {:else if !people.length}
-    <div class="empty">{t('noPeople')}</div>
+    <EmptyState icon="people" title={t('noPeople')} text={t('noPeopleHint')} />
   {:else}
     <div class="people-grid">
       {#each people as p (p.id)}
@@ -127,10 +130,13 @@
 </div>
 
 <style>
+  h1 .count {
+    margin-left: 8px;
+  }
   .people-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 20px 16px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 24px 20px;
   }
   .person {
     display: flex;
@@ -152,6 +158,14 @@
     background: var(--placeholder);
     cursor: pointer;
     display: block;
+    box-shadow: var(--shadow-sm);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .face:hover {
+    transform: scale(1.03);
+    box-shadow: var(--shadow);
   }
   .person.sel .face {
     outline: 4px solid var(--primary);
@@ -174,11 +188,16 @@
   }
   .name {
     text-align: center;
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
-    min-height: 32px;
-    padding: 4px;
-    font-weight: 500;
+    min-height: 34px;
+    padding: 4px 8px;
+    margin-top: 6px;
+    font-weight: 600;
+    border-radius: 8px;
+  }
+  .name:hover:not(:focus) {
+    border-color: var(--border);
   }
   .meta {
     gap: 2px;

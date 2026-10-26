@@ -35,7 +35,7 @@
       {/each}
     </div>
   {/if}
-  <Timeline filters={{ tagId: params.id }} {selection} emptyText={t('nothingHere')} />
+  <Timeline filters={{ tagId: params.id }} {selection} emptyText={t('nothingHere')} emptyHint="" emptyIcon="tag" />
 </div>
 <SelectionBar {selection} context="tag" />
 

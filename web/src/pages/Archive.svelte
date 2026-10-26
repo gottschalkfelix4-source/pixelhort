@@ -9,6 +9,6 @@
 
 <div class="page">
   <div class="page-header"><h1>{t('navArchive')}</h1></div>
-  <Timeline filters={{ visibility: 'archive' }} {selection} emptyText={t('archiveEmpty')} />
+  <Timeline filters={{ visibility: 'archive' }} {selection} emptyText={t('archiveEmpty')} emptyHint={t('archiveEmptyHint')} emptyIcon="archive" />
 </div>
 <SelectionBar {selection} context="archive" />

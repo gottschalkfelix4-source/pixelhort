@@ -100,7 +100,7 @@
     <div class="spinner"></div>
   {:else if !session.hasPin}
     <form class="card pin-card form" onsubmit={setup}>
-      <Icon name="lock" size={40} />
+      <span class="lock-icon"><Icon name="lock" size={32} /></span>
       <p>{t('lockedSetupText')}</p>
       <label class="field">{t('pin')}<input type="password" inputmode="numeric" bind:value={pin} autocomplete="new-password" /></label>
       <label class="field">{t('pinRepeat')}<input type="password" inputmode="numeric" bind:value={pin2} autocomplete="new-password" /></label>
@@ -109,7 +109,7 @@
     </form>
   {:else if !unlocked}
     <form class="card pin-card form" onsubmit={unlock}>
-      <Icon name="lock" size={40} />
+      <span class="lock-icon"><Icon name="lock" size={32} /></span>
       <p>{t('lockedUnlockText')}</p>
       <!-- svelte-ignore a11y_autofocus -->
       <input type="password" inputmode="numeric" bind:value={pin} autofocus aria-label={t('pin')} autocomplete="off" />
@@ -121,6 +121,8 @@
       filters={{ visibility: 'locked' }}
       {selection}
       emptyText={t('lockedEmpty')}
+      emptyHint=""
+      emptyIcon="lock"
       viewerOpts={{}}
       onerror={(e) => {
         if (e.status === 403) load();
@@ -134,9 +136,21 @@
 {/if}
 
 <style>
+  .lock-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    background: var(--primary-soft);
+  }
   .pin-card {
-    max-width: 380px;
+    max-width: 400px;
     margin: 48px auto;
+    padding: 36px 32px;
+    box-shadow: var(--shadow-sm);
     align-items: center;
     text-align: center;
   }

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import EmptyState from '../components/EmptyState.svelte';
   import AssetGrid from '../components/AssetGrid.svelte';
   import SelectionBar from '../components/SelectionBar.svelte';
   import Timeline from '../components/Timeline.svelte';
@@ -174,7 +175,7 @@
 <div class="layout">
   <div class="page main-col">
     {#if error}
-      <div class="empty error-text">{error}</div>
+      <EmptyState icon="warning" title={error} />
     {:else if !album}
       <div class="spinner"></div>
     {:else}
@@ -229,7 +230,9 @@
       </div>
 
       {#if !sorted.length}
-        <div class="empty">{t('albumEmpty')}</div>
+        <EmptyState icon="album" title={t('albumEmpty')} text={canEdit ? t('albumEmptyHint') : ''}>
+          {#if canEdit}<button class="btn primary" onclick={() => (adding = true)}><Icon name="add" size={20} /> {t('addPhotos')}</button>{/if}
+        </EmptyState>
       {:else}
         <AssetGrid assets={sorted} {selection} groupByDay={false} onchange={load} />
       {/if}
@@ -354,7 +357,10 @@
   }
   .title-input {
     font-size: 2rem;
-    font-weight: 400;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+    min-height: 0;
     border: none;
     border-bottom: 1px solid transparent;
     border-radius: 0;
@@ -365,6 +371,15 @@
   .title-input:focus {
     border-bottom-color: var(--border);
     outline: none;
+    box-shadow: none;
+    background: transparent;
+  }
+  .title-input:focus {
+    border-bottom-color: var(--primary);
+  }
+  .album-head h1 {
+    font-size: 2rem;
+    letter-spacing: -0.02em;
   }
   .desc-input {
     border: none;
@@ -376,8 +391,10 @@
   }
   .desc-input:focus {
     outline: none;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--primary);
     border-radius: 0;
+    box-shadow: none;
+    background: transparent;
   }
   .activity {
     width: 340px;

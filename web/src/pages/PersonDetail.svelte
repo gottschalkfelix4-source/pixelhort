@@ -65,7 +65,7 @@
     {/if}
   </div>
   {#if person}<p class="muted small">{t('facesCount', { n: person.faceCount })}</p>{/if}
-  <Timeline filters={{ personId: params.id }} {selection} emptyText={t('nothingHere')} />
+  <Timeline filters={{ personId: params.id }} {selection} emptyText={t('nothingHere')} emptyHint="" emptyIcon="person" />
 </div>
 <SelectionBar {selection} context="person" />
 

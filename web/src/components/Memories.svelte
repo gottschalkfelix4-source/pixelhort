@@ -179,7 +179,8 @@
     flex: 0 0 auto;
     width: 150px;
     height: 210px;
-    border-radius: 14px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
     border: none;
     padding: 0;
@@ -203,9 +204,10 @@
     bottom: 0;
     padding: 24px 12px 12px;
     color: #fff;
-    font-weight: 600;
+    font-weight: 700;
+    line-height: 1.25;
     text-align: left;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
   }
   .story {
     position: fixed;
@@ -282,8 +284,12 @@
   }
   @media (max-width: 600px) {
     .card {
-      width: 110px;
-      height: 160px;
+      width: 116px;
+      height: 164px;
+    }
+    .label {
+      font-size: 0.85rem;
+      padding: 24px 10px 10px;
     }
   }
 </style>

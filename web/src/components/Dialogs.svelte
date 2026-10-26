@@ -74,19 +74,32 @@
     max-width: calc(100vw - 32px);
   }
   .toast {
-    background: #323232;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #1c1c20;
     color: #fff;
-    padding: 12px 20px;
-    border-radius: 8px;
+    padding: 12px 20px 12px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: var(--shadow);
     font-size: 0.9rem;
+    font-weight: 500;
     animation: pop 0.2s ease-out;
   }
-  .toast.error {
-    background: #b3261e;
+  .toast::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9ec2ff;
+    flex-shrink: 0;
   }
-  .toast.success {
-    background: #1e6b34;
+  .toast.error::before {
+    background: #f87171;
+  }
+  .toast.success::before {
+    background: #4ade80;
   }
   @keyframes pop {
     from {

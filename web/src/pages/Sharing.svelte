@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from '../components/Icon.svelte';
+  import EmptyState from '../components/EmptyState.svelte';
   import Pickers from '../components/Pickers.svelte';
   import ShareLinkDialog from '../components/ShareLinkDialog.svelte';
   import { api, thumbnailUrl, type PartnerDto, type SharedLinkDto } from '../lib/api';
@@ -82,19 +83,21 @@
 </script>
 
 <div class="page">
-  <div class="page-header"><h1>{t('navSharing')}</h1></div>
-  <div class="tabs">
-    {#if prefs.value.sharedLinks.enabled}
-      <button class:active={tab === 'links'} onclick={() => setQuery({ tab: null })}>{t('sharedLinks')}</button>
-    {/if}
-    <button class:active={tab === 'partners'} onclick={() => setQuery({ tab: 'partners' })}>{t('partners')}</button>
+  <div class="page-header">
+    <h1>{t('navSharing')}</h1>
+    <div class="segmented">
+      {#if prefs.value.sharedLinks.enabled}
+        <button class:active={tab === 'links'} onclick={() => setQuery({ tab: null })}><Icon name="link" size={18} /> {t('sharedLinks')}</button>
+      {/if}
+      <button class:active={tab === 'partners'} onclick={() => setQuery({ tab: 'partners' })}><Icon name="people" size={18} /> {t('partners')}</button>
+    </div>
   </div>
 
   {#if loading}
     <div class="spinner"></div>
   {:else if tab === 'links'}
     {#if !links.length}
-      <div class="empty">{t('noSharedLinks')}</div>
+      <EmptyState icon="link" title={t('noSharedLinks')} text={t('noSharedLinksHint')} />
     {:else}
       <ul class="links">
         {#each links as l (l.id)}
@@ -109,49 +112,55 @@
                 {l.type === 'ALBUM' ? t('linkAlbum') : t('linkIndividual', { n: l.assetIds.length })} · {formatAbs(l.createdAt, { dateStyle: 'medium' })}
               </div>
               <div class="row wrap badges">
-                {#if expired(l)}<span class="badge err">{t('expired')}</span>
+                {#if expired(l)}<span class="badge danger">{t('expired')}</span>
                 {:else if l.expiresAt}<span class="badge">{t('expires')}: {formatAbs(l.expiresAt)}</span>{/if}
-                {#if l.hasPassword}<span class="badge"><Icon name="lock" size={12} /> {t('passwordProtected')}</span>{/if}
-                {#if l.allowDownload}<span class="badge">{t('download')}</span>{/if}
-                {#if l.allowUpload}<span class="badge">{t('upload')}</span>{/if}
+                {#if l.hasPassword}<span class="badge primary"><Icon name="lock" size={12} /> {t('passwordProtected')}</span>{/if}
+                {#if l.allowDownload}<span class="badge"><Icon name="download" size={12} /> {t('download')}</span>{/if}
+                {#if l.allowUpload}<span class="badge"><Icon name="upload" size={12} /> {t('upload')}</span>{/if}
               </div>
             </div>
             <div class="row acts">
-              <a class="icon-btn" href={l.url} target="_blank" rel="noopener" data-external aria-label={t('open')}><Icon name="openNew" /></a>
-              <button class="icon-btn" onclick={() => copy(l)} title={t('copyLink')} aria-label={t('copyLink')}><Icon name="copy" /></button>
-              <button class="icon-btn" onclick={() => (editing = l)} title={t('edit')} aria-label={t('edit')}><Icon name="edit" /></button>
-              <button class="icon-btn" onclick={() => remove(l)} title={t('delete')} aria-label={t('delete')}><Icon name="delete" /></button>
+              <a class="icon-btn" href={l.url} target="_blank" rel="noopener" data-external title={t('open')} aria-label={t('open')}><Icon name="openNew" size={20} /></a>
+              <button class="icon-btn" onclick={() => copy(l)} title={t('copyLink')} aria-label={t('copyLink')}><Icon name="copy" size={20} /></button>
+              <button class="icon-btn" onclick={() => (editing = l)} title={t('edit')} aria-label={t('edit')}><Icon name="edit" size={20} /></button>
+              <button class="icon-btn" onclick={() => remove(l)} title={t('delete')} aria-label={t('delete')}><Icon name="delete" size={20} /></button>
             </div>
           </li>
         {/each}
       </ul>
     {/if}
   {:else}
-    <section>
-      <div class="row head">
+    <section class="card">
+      <div class="section-title">
         <h2>{t('partnerSharedBy')}</h2>
         <span class="spacer"></span>
-        <button class="btn" onclick={() => (addingPartner = true)}><Icon name="add" size={20} /> {t('addPartner')}</button>
+        <button class="btn small" onclick={() => (addingPartner = true)}><Icon name="add" size={18} /> {t('addPartner')}</button>
       </div>
-      {#if !sharedBy.length}<p class="muted">{t('noPartners')}</p>{/if}
-      {#each sharedBy as p (p.user.id)}
-        <div class="partner row">
-          <Icon name="person" />
-          <div class="grow"><div>{p.user.name}</div><small class="muted">{p.user.email}</small></div>
-          <button class="icon-btn" onclick={() => removePartner(p)} aria-label={t('remove')}><Icon name="close" /></button>
-        </div>
-      {/each}
+      {#if !sharedBy.length}<p class="muted small none">{t('noPartnersHint')}</p>{/if}
+      <ul class="list">
+        {#each sharedBy as p (p.user.id)}
+          <li>
+            <span class="avatar-initial">{(p.user.name || p.user.email).slice(0, 1).toUpperCase()}</span>
+            <div class="grow"><div class="strong">{p.user.name}</div><small class="muted">{p.user.email}</small></div>
+            <button class="icon-btn" onclick={() => removePartner(p)} title={t('remove')} aria-label={t('remove')}><Icon name="close" size={20} /></button>
+          </li>
+        {/each}
+      </ul>
     </section>
-    <section>
-      <div class="row head"><h2>{t('partnerSharedWith')}</h2></div>
-      {#if !sharedWith.length}<p class="muted">{t('noPartners')}</p>{/if}
-      {#each sharedWith as p (p.user.id)}
-        <div class="partner row">
-          <Icon name="person" />
-          <div class="grow"><div>{p.user.name}</div><small class="muted">{p.user.email}</small></div>
-          <label class="check small"><input type="checkbox" checked={p.inTimeline} onchange={() => toggleTimeline(p)} /> {t('showInTimeline')}</label>
-        </div>
-      {/each}
+    <section class="card">
+      <div class="section-title"><h2>{t('partnerSharedWith')}</h2></div>
+      {#if !sharedWith.length}<p class="muted small none">{t('noPartners')}</p>{/if}
+      <ul class="list">
+        {#each sharedWith as p (p.user.id)}
+          <li>
+            <span class="avatar-initial">{(p.user.name || p.user.email).slice(0, 1).toUpperCase()}</span>
+            <div class="grow"><div class="strong">{p.user.name}</div><small class="muted">{p.user.email}</small></div>
+            <label class="check small"
+              >{t('showInTimeline')} <input type="checkbox" class="switch" checked={p.inTimeline} onchange={() => toggleTimeline(p)} /></label
+            >
+          </li>
+        {/each}
+      </ul>
     </section>
   {/if}
 </div>
@@ -183,21 +192,28 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    max-width: 960px;
   }
   .links li {
     display: flex;
-    gap: 14px;
+    gap: 16px;
     align-items: center;
-    padding: 10px;
+    padding: 12px 12px 12px 12px;
     flex-wrap: wrap;
+    border-radius: var(--radius);
+    transition: border-color 0.15s;
+  }
+  .links li:hover {
+    border-color: var(--border-strong);
   }
   .thumb {
-    width: 72px;
-    height: 72px;
-    border-radius: 10px;
+    width: 76px;
+    height: 76px;
+    border-radius: 12px;
     overflow: hidden;
     background: var(--bg-soft);
+    color: var(--fg-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -211,34 +227,31 @@
   .info {
     flex: 1;
     min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
   .title {
-    font-weight: 500;
+    font-weight: 600;
   }
   .badges {
-    gap: 4px;
-    margin-top: 4px;
-  }
-  .badge.err {
-    color: var(--danger);
+    gap: 6px;
+    margin-top: 6px;
   }
   .acts {
     gap: 0;
   }
   section {
-    margin-bottom: 28px;
-    max-width: 720px;
+    margin-bottom: 16px;
+    max-width: 760px;
   }
-  .head {
-    margin-bottom: 8px;
+  .section-title {
+    margin-bottom: 4px;
   }
-  .partner {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    gap: 14px;
+  .none {
+    margin: 8px 0 0;
   }
-  .grow {
-    flex: 1;
-    min-width: 0;
+  .strong {
+    font-weight: 600;
   }
 </style>

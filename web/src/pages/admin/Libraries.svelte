@@ -1,4 +1,5 @@
 <script lang="ts">
+  import EmptyState from '../../components/EmptyState.svelte';
   import Icon from '../../components/Icon.svelte';
   import Modal from '../../components/Modal.svelte';
   import { api, type LibraryDto, type UserDto } from '../../lib/api';
@@ -89,13 +90,13 @@
   <button class="btn primary" onclick={() => open('new')}><Icon name="add" size={20} /> {t('newLibrary')}</button>
 </div>
 {#if !libs.length}
-  <div class="empty">{t('nothingHere')}</div>
+  <EmptyState icon="folder" title={t('nothingHere')} />
 {/if}
 <div class="libs">
   {#each libs as l (l.id)}
     <div class="card lib">
       <div class="row">
-        <Icon name="folder" />
+        <span class="list-icon"><Icon name="folder" /></span>
         <h3 class="grow">{l.name}</h3>
         <button class="btn small" onclick={() => scan(l)}><Icon name="refresh" size={16} /> {t('scan')}</button>
         <button class="icon-btn" onclick={() => open(l)} aria-label={t('edit')}><Icon name="edit" size={20} /></button>
@@ -124,7 +125,7 @@
       </label>
       <label class="field">{t('importPaths')}<textarea rows="3" bind:value={form.importPaths} placeholder="/mnt/photos"></textarea></label>
       <label class="field">{t('exclusionPatterns')}<textarea rows="3" bind:value={form.exclusionPatterns}></textarea></label>
-      <label class="check"><input type="checkbox" bind:checked={form.watch} /> {t('watch')}</label>
+      <label class="setting"><span class="text"><strong>{t('watch')}</strong></span><input type="checkbox" class="switch" bind:checked={form.watch} /></label>
     </form>
     {#snippet footer()}
       <button class="btn text" onclick={() => (editing = null)}>{t('cancel')}</button>

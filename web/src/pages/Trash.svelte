@@ -2,6 +2,7 @@
   import AssetGrid from '../components/AssetGrid.svelte';
   import SelectionBar from '../components/SelectionBar.svelte';
   import Icon from '../components/Icon.svelte';
+  import EmptyState from '../components/EmptyState.svelte';
   import { api, type AssetDto } from '../lib/api';
   import { Selection } from '../lib/selection.svelte';
   import { auth, bumpAssets, confirmDialog, toast, toastError, ui } from '../lib/state.svelte';
@@ -61,11 +62,11 @@
       <button class="btn danger" onclick={empty}><Icon name="delete" size={20} /> {t('emptyTrash')}</button>
     {/if}
   </div>
-  {#if days}<p class="muted small">{t('trashHint', { n: days })}</p>{/if}
+  {#if days && assets.length}<p class="page-intro">{t('trashHint', { n: days })}</p>{/if}
   {#if loading && !assets.length}
     <div class="spinner"></div>
   {:else if !assets.length}
-    <div class="empty">{t('trashEmpty')}</div>
+    <EmptyState icon="delete" title={t('trashEmpty')} text={days ? t('trashHint', { n: days }) : ''} />
   {:else}
     <AssetGrid {assets} {selection} groupByDay={false} onchange={load} />
   {/if}

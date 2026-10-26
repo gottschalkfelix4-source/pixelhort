@@ -217,15 +217,23 @@
     height: var(--topbar-h);
     z-index: 60;
     background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow);
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 0 12px;
+    padding: 0 16px 0 12px;
+    animation: slide 0.18s ease-out;
+  }
+  @keyframes slide {
+    from {
+      transform: translateY(-100%);
+    }
   }
   .count {
-    font-weight: 500;
+    font-weight: 600;
     font-size: 1.05rem;
+    color: var(--primary);
     margin-left: 8px;
     white-space: nowrap;
   }
@@ -237,10 +245,11 @@
     right: 0;
     top: 44px;
     background: var(--bg-elev);
-    border-radius: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     box-shadow: var(--shadow);
-    padding: 6px 0;
-    min-width: 240px;
+    padding: 6px;
+    min-width: 260px;
     z-index: 62;
     display: flex;
     flex-direction: column;
@@ -249,12 +258,14 @@
     display: flex;
     gap: 12px;
     align-items: center;
-    padding: 10px 16px;
+    padding: 10px 14px;
     border: none;
+    border-radius: 10px;
     background: none;
     cursor: pointer;
     text-align: left;
     color: var(--fg);
+    font-weight: 500;
   }
   .menu button:hover {
     background: var(--bg-hover);

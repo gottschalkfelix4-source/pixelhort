@@ -65,16 +65,24 @@
     width: 360px;
     max-width: calc(100vw - 32px);
     background: var(--bg-elev);
-    border-radius: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     z-index: 900;
+    animation: up 0.2s ease-out;
     overflow: hidden;
+  }
+  @keyframes up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
   }
   header {
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 6px 6px 6px 4px;
+    padding: 8px 8px 8px 6px;
   }
   .title {
     flex: 1;

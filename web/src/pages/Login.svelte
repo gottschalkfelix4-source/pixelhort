@@ -51,6 +51,7 @@
 </script>
 
 <div class="wrap">
+  <div class="glow" aria-hidden="true"></div>
   <div class="card login">
     <div class="brand">
       <Logo size={64} />
@@ -79,12 +80,12 @@
               autocomplete={setup ? 'new-password' : 'current-password'}
             /></label
           >
-          {#if error}<p class="error-text">{error}</p>{/if}
-          <button class="btn primary" type="submit" disabled={busy}>{setup ? t('setupButton') : t('loginButton')}</button>
+          {#if error}<p class="error-text error-box">{error}</p>{/if}
+          <button class="btn primary submit" type="submit" disabled={busy}>{setup ? t('setupButton') : t('loginButton')}</button>
         </form>
       {:else}
         <p class="muted">{t('passwordLoginDisabled')}</p>
-        {#if error}<p class="error-text">{error}</p>{/if}
+        {#if error}<p class="error-text error-box">{error}</p>{/if}
       {/if}
 
       {#if !setup && auth.status.oauthEnabled}
@@ -98,36 +99,73 @@
 <style>
   .login-message {
     white-space: pre-line;
-    padding: 10px 12px;
-    border-radius: 8px;
-    background: var(--bg-soft);
-    margin: 0 0 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--primary-soft);
+    color: var(--fg);
+    margin: 0;
+    font-size: 0.9rem;
   }
   .wrap {
+    position: relative;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 16px;
-    background: var(--bg-soft);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .glow {
+    position: absolute;
+    inset: -20%;
+    background:
+      radial-gradient(40% 35% at 25% 25%, rgba(59, 140, 255, 0.28), transparent 70%),
+      radial-gradient(35% 30% at 78% 70%, rgba(255, 196, 46, 0.18), transparent 70%),
+      radial-gradient(45% 40% at 70% 15%, rgba(21, 87, 201, 0.22), transparent 70%);
+    filter: blur(20px);
+    pointer-events: none;
   }
   .login {
+    position: relative;
     width: 100%;
-    max-width: 400px;
-    padding: 32px;
+    max-width: 420px;
+    padding: 40px 36px 36px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
+    box-shadow: var(--shadow);
+    border-radius: 28px;
+    background: color-mix(in srgb, var(--bg-elev) 88%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
   .brand {
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .brand h1 {
+    margin-top: 10px;
+    font-size: 1.6rem;
   }
   .brand p {
     margin: 0;
+  }
+  .submit {
+    height: 46px;
+    margin-top: 4px;
+    font-size: 0.95rem;
+  }
+  .error-box {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--danger-soft);
+    font-size: 0.88rem;
   }
   .or {
     text-align: center;
@@ -150,5 +188,11 @@
   }
   .oauth {
     width: 100%;
+    height: 46px;
+  }
+  @media (max-width: 480px) {
+    .login {
+      padding: 32px 22px 26px;
+    }
   }
 </style>

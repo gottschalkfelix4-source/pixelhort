@@ -10,6 +10,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "@fontsource-variable/overpass": "5.3.0",
     "@photo-sphere-viewer/core": "5.15.1",
     "maplibre-gl": "5.24.0",
     "thumbhash": "0.1.1"

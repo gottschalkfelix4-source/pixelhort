@@ -9,6 +9,6 @@
 
 <div class="page">
   <div class="page-header"><h1>{t('navFavorites')}</h1></div>
-  <Timeline filters={{ isFavorite: true }} {selection} emptyText={t('favoritesEmpty')} />
+  <Timeline filters={{ isFavorite: true }} {selection} emptyText={t('favoritesEmpty')} emptyHint={t('favoritesEmptyHint')} emptyIcon="heartOutline" />
 </div>
 <SelectionBar {selection} context="favorites" />

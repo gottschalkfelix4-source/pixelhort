@@ -1,19 +1,18 @@
 <script lang="ts">
-  import Logo from '../components/Logo.svelte';
+  import EmptyState from '../components/EmptyState.svelte';
+  import Icon from '../components/Icon.svelte';
+  import { t } from '../lib/i18n';
 </script>
 
 <div class="page">
-  <div class="empty">
-    <h1>404</h1>
-    <p><a class="home" href="/photos"><Logo size={28} wordmark /></a></p>
-  </div>
+  <div class="spacer-top"></div>
+  <EmptyState icon="explore" title="404" text={t('pageNotFound')}>
+    <a class="btn primary" href="/photos"><Icon name="photo" size={20} /> {t('backToPhotos')}</a>
+  </EmptyState>
 </div>
 
 <style>
-  .home {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.2rem;
+  .spacer-top {
+    height: 48px;
   }
 </style>

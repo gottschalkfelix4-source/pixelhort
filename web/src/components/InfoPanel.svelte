@@ -305,8 +305,9 @@
     overflow-y: auto;
     background: var(--bg-elev);
     color: var(--fg);
-    padding: 8px 16px 32px;
+    padding: 10px 20px 32px;
     flex-shrink: 0;
+    border-left: 1px solid var(--border);
   }
   header {
     display: flex;
@@ -318,11 +319,12 @@
     margin-bottom: 20px;
   }
   h3 {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     color: var(--fg-muted);
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
   .cover-btn {
     border: none;

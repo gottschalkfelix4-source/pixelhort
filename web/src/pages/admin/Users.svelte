@@ -83,15 +83,20 @@
     <tbody>
       {#each users as u (u.id)}
         <tr>
-          <td>{u.name}</td>
-          <td>{u.email}</td>
-          <td>{u.isAdmin ? t('yes') : t('no')}</td>
+          <td>
+            <div class="who">
+              <span class="avatar-initial">{(u.name || u.email).slice(0, 1).toUpperCase()}</span>
+              <strong>{u.name}</strong>
+            </div>
+          </td>
+          <td class="muted">{u.email}</td>
+          <td>{#if u.isAdmin}<span class="badge primary"><Icon name="shield" size={12} /> {t('yes')}</span>{:else}<span class="badge">{t('no')}</span>{/if}</td>
           <td>{formatBytes(u.usageBytes)}{u.quotaBytes ? ` / ${formatBytes(u.quotaBytes)}` : ''}</td>
           <td class="small muted">{formatAbs(u.createdAt, { dateStyle: 'medium' })}</td>
           <td class="acts">
-            <button class="icon-btn" onclick={() => open(u)} aria-label={t('edit')}><Icon name="edit" size={20} /></button>
+            <button class="icon-btn" onclick={() => open(u)} title={t('edit')} aria-label={t('edit')}><Icon name="edit" size={20} /></button>
             {#if u.id !== auth.user?.id}
-              <button class="icon-btn" onclick={() => remove(u)} aria-label={t('delete')}><Icon name="delete" size={20} /></button>
+              <button class="icon-btn" onclick={() => remove(u)} title={t('delete')} aria-label={t('delete')}><Icon name="delete" size={20} /></button>
             {/if}
           </td>
         </tr>
@@ -114,7 +119,7 @@
         /></label
       >
       <label class="field">{t('quota')}<input type="number" min="0" step="0.1" bind:value={form.quotaGb} /></label>
-      <label class="check"><input type="checkbox" bind:checked={form.isAdmin} /> {t('isAdmin')}</label>
+      <label class="setting"><span class="text"><strong>{t('isAdmin')}</strong></span><input type="checkbox" class="switch" bind:checked={form.isAdmin} /></label>
     </form>
     {#snippet footer()}
       <button class="btn text" onclick={() => (editing = null)}>{t('cancel')}</button>
@@ -125,7 +130,16 @@
 
 <style>
   .head {
-    margin-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  .who {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .who .avatar-initial {
+    width: 34px;
+    height: 34px;
   }
   .acts {
     white-space: nowrap;

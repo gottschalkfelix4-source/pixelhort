@@ -68,7 +68,7 @@
 
     <fieldset class="card">
       <legend>{t('cfgMl')}</legend>
-      <label class="check"><input type="checkbox" bind:checked={cfg.ml.enabled} /> {t('cfgEnabled')}</label>
+      <label class="setting"><span class="text"><strong>{t('cfgEnabled')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.ml.enabled} /></label>
       <div class="grid-2">
         <label class="field">{t('cfgMlUrl')}<input type="url" bind:value={cfg.ml.url} /></label>
         <label class="field">{t('cfgClipModel')}<input type="text" bind:value={cfg.ml.clipModel} /></label>
@@ -81,13 +81,13 @@
           >{t('cfgDuplicateMaxDistance')}<input type="number" step="0.001" min="0" max="1" bind:value={cfg.ml.duplicateMaxDistance} /></label
         >
       </div>
-      <label class="check"><input type="checkbox" bind:checked={cfg.ml.ocrEnabled} /> {t('cfgOcr')}</label>
-      <label class="check"><input type="checkbox" bind:checked={cfg.ml.objectsEnabled} /> {t('cfgObjects')}</label>
+      <label class="setting"><span class="text"><strong>{t('cfgOcr')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.ml.ocrEnabled} /></label>
+      <label class="setting"><span class="text"><strong>{t('cfgObjects')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.ml.objectsEnabled} /></label>
     </fieldset>
 
     <fieldset class="card">
       <legend>{t('cfgBackup')}</legend>
-      <label class="check"><input type="checkbox" bind:checked={cfg.backup.enabled} /> {t('cfgEnabled')}</label>
+      <label class="setting"><span class="text"><strong>{t('cfgEnabled')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.backup.enabled} /></label>
       <div class="grid-2">
         <label class="field">{t('cfgCron')}<input type="text" bind:value={cfg.backup.cron} placeholder="0 0 2 * * *" /></label>
         <label class="field">{t('cfgKeep')}<input type="number" min="1" bind:value={cfg.backup.keep} /></label>
@@ -148,13 +148,13 @@
 
     <fieldset class="card">
       <legend>{t('cfgLibrary')}</legend>
-      <label class="check"><input type="checkbox" bind:checked={cfg.library.scanEnabled} /> {t('cfgLibraryScan')}</label>
+      <label class="setting"><span class="text"><strong>{t('cfgLibraryScan')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.library.scanEnabled} /></label>
       <label class="field narrow">{t('cfgCron')}<input type="text" bind:value={cfg.library.scanCron} placeholder="0 0 * * * *" /></label>
     </fieldset>
 
     <fieldset class="card">
       <legend>{t('cfgMap')}</legend>
-      <label class="check"><input type="checkbox" bind:checked={cfg.map.enabled} /> {t('cfgEnabled')}</label>
+      <label class="setting"><span class="text"><strong>{t('cfgEnabled')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.map.enabled} /></label>
       <label class="field">{t('cfgTileUrl')}<input type="text" bind:value={cfg.map.tileUrl} /></label>
       <label class="field">{t('cfgAttribution')}<input type="text" bind:value={cfg.map.attribution} /></label>
     </fieldset>
@@ -162,13 +162,13 @@
     <fieldset class="card">
       <legend>{t('cfgTrash')} / {t('cfgReverseGeocoding')} / {t('cfgPasswordLogin')}</legend>
       <label class="field narrow">{t('cfgTrashDays')}<input type="number" min="0" bind:value={cfg.trash.days} /></label>
-      <label class="check"><input type="checkbox" bind:checked={cfg.reverseGeocoding.enabled} /> {t('cfgReverseGeocoding')}</label>
-      <label class="check"><input type="checkbox" bind:checked={cfg.passwordLogin.enabled} /> {t('cfgPasswordLogin')}</label>
+      <label class="setting"><span class="text"><strong>{t('cfgReverseGeocoding')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.reverseGeocoding.enabled} /></label>
+      <label class="setting"><span class="text"><strong>{t('cfgPasswordLogin')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.passwordLogin.enabled} /></label>
     </fieldset>
 
     <fieldset class="card">
       <legend>{t('cfgOauth')}</legend>
-      <label class="check"><input type="checkbox" bind:checked={cfg.oauth.enabled} /> {t('cfgEnabled')}</label>
+      <label class="setting"><span class="text"><strong>{t('cfgEnabled')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.oauth.enabled} /></label>
       <div class="grid-2">
         <label class="field">{t('cfgIssuerUrl')}<input type="url" bind:value={cfg.oauth.issuerUrl} /></label>
         <label class="field">{t('cfgClientId')}<input type="text" bind:value={cfg.oauth.clientId} /></label>
@@ -179,7 +179,7 @@
         <label class="field">{t('cfgButtonText')}<input type="text" bind:value={cfg.oauth.buttonText} /></label>
         <label class="field">{t('cfgMobileRedirect')}<input type="text" bind:value={cfg.oauth.mobileRedirectUri} /></label>
       </div>
-      <label class="check"><input type="checkbox" bind:checked={cfg.oauth.autoRegister} /> {t('cfgAutoRegister')}</label>
+      <label class="setting"><span class="text"><strong>{t('cfgAutoRegister')}</strong></span><input type="checkbox" class="switch" bind:checked={cfg.oauth.autoRegister} /></label>
       <p class="muted small">{t('cfgRedirectWeb')}: <code>{location.origin}/auth/oauth-callback</code></p>
     </fieldset>
 
@@ -199,12 +199,23 @@
   fieldset {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
     margin: 0;
+    min-width: 0;
   }
   legend {
-    font-weight: 500;
-    padding: 0 6px;
+    float: left;
+    width: 100%;
+    font-weight: 600;
+    font-size: 1.05rem;
+    padding: 0;
+    margin-bottom: 4px;
+  }
+  fieldset :global(.setting) {
+    padding: 6px 0;
+  }
+  fieldset :global(.setting + .setting) {
+    border-top: none;
   }
   .narrow {
     max-width: 260px;
