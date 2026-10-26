@@ -120,7 +120,7 @@ jobs:
         run: |
           xcodegen generate
           xcodebuild test -project Pixelhort.xcodeproj -scheme Pixelhort -destination "id=$UDID" \
-            -resultBundlePath "$RUNNER_TEMP/ui-tests.xcresult"             CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= -quiet
+            -resultBundlePath "$RUNNER_TEMP/ui-tests.xcresult"             CODE_SIGNING_ALLOWED=NO -quiet
       - name: Test report and screenshots
         if: always()
         run: |

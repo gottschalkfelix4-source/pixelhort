@@ -22,6 +22,8 @@ final class FeatureTourUITests: XCTestCase {
         let fixture = try prepareData()
 
         app.launch()
+        // Unsigned simulator builds have no Keychain, so the login may not survive a relaunch.
+        logInIfNeeded()
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "app is not logged in")
 
@@ -93,6 +95,30 @@ final class FeatureTourUITests: XCTestCase {
     }
 
     // MARK: - UI helpers
+
+    private func logInIfNeeded() {
+        let url = app.textFields["server.url"]
+        let email = app.textFields["login.email"]
+        let tabs = app.tabBars.firstMatch
+        let deadline = Date().addingTimeInterval(30)
+        while Date() < deadline, !tabs.exists, !url.exists, !email.exists {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+        }
+        if url.exists {
+            url.tap()
+            url.typeText(server)
+            app.buttons["server.connect"].tap()
+            _ = email.waitForExistence(timeout: 30)
+        }
+        if email.exists {
+            email.tap()
+            email.typeText("ios@example.com")
+            let password = app.secureTextFields["login.password"]
+            password.tap()
+            password.typeText("iostester1")
+            app.buttons["login.submit"].tap()
+        }
+    }
 
     private var cell: XCUIElement {
         app.descendants(matching: .any).matching(identifier: "timeline.asset").firstMatch
