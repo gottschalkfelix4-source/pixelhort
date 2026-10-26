@@ -42,6 +42,19 @@ final class BackupUploader: NSObject, @unchecked Sendable {
         return URLSession(configuration: configuration, delegate: self, delegateQueue: queue)
     }()
 
+    /// Foreground session for runs the app awaits itself (manual "back up now", app active).
+    /// Same delegate, so progress and persistence work identically; it avoids the latency and
+    /// simulator limitations of the background daemon.
+    private lazy var foregroundSession: URLSession = {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 120
+        configuration.timeoutIntervalForResource = 60 * 60 * 6
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        queue.name = "app.pixelhort.backup.foreground-delegate"
+        return URLSession(configuration: configuration, delegate: self, delegateQueue: queue)
+    }()
+
     static var bodyDirectory: URL {
         let base = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
@@ -68,8 +81,10 @@ final class BackupUploader: NSObject, @unchecked Sendable {
     }
 
     func cancelAll() {
-        session.getAllTasks { tasks in
-            tasks.forEach { $0.cancel() }
+        for s in [session, foregroundSession] {
+            s.getAllTasks { tasks in
+                tasks.forEach { $0.cancel() }
+            }
         }
     }
 
@@ -88,7 +103,8 @@ final class BackupUploader: NSObject, @unchecked Sendable {
 
         let request = api.uploadRequest(contentType: writer.contentType, checksum: resource.checksum,
                                         allowsCellular: allowsCellular)
-        let task = session.uploadTask(with: request, fromFile: bodyURL)
+        // Awaited uploads run in the foreground session; enqueue-only ones survive suspension.
+        let task = (waitForCompletion ? foregroundSession : session).uploadTask(with: request, fromFile: bodyURL)
         task.taskDescription = context.encoded()
 
         guard waitForCompletion else {
@@ -125,7 +141,8 @@ final class BackupUploader: NSObject, @unchecked Sendable {
             if (error as? URLError)?.code == .cancelled {
                 result = .failure(CancellationError())
             } else {
-                result = .failure(UploadFailure(message: error.localizedDescription))
+                let ns = error as NSError
+                result = .failure(UploadFailure(message: "\(ns.localizedDescription) (\(ns.domain) \(ns.code))"))
             }
         } else if let http = task.response as? HTTPURLResponse {
             do {
