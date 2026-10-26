@@ -105,7 +105,12 @@ jobs:
           echo "UDID=$UDID" >> "$GITHUB_ENV"
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID" -b
-          xcrun simctl addmedia "$UDID" tests/fixtures/*.jpg
+          # Memories need a photo taken "on this day" in an earlier year, the map needs GPS.
+          cp tests/fixtures/*.jpg "$RUNNER_TEMP/"
+          Y=$(( $(date -u +%Y) - 3 ))
+          exiftool -q -overwrite_original -DateTimeOriginal="$Y:$(date -u +%m:%d) 12:00:00" "$RUNNER_TEMP/ios-1.jpg"
+          exiftool -q -overwrite_original -GPSLatitude=52.52 -GPSLatitudeRef=N -GPSLongitude=13.40 -GPSLongitudeRef=E "$RUNNER_TEMP/ios-2.jpg"
+          xcrun simctl addmedia "$UDID" "$RUNNER_TEMP"/ios-*.jpg
           xcrun simctl privacy "$UDID" grant photos app.pixelhort || true
       - name: UI test (login, backup, timeline)
         working-directory: mobile/ios

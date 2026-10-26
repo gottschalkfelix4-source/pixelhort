@@ -14,7 +14,7 @@ final class BackupFlowUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func testLoginBackupAndTimeline() throws {
+    func test1_LoginBackupAndTimeline() throws {
         let app = XCUIApplication()
         app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         addUIInterruptionMonitor(withDescription: "System alerts") { alert in

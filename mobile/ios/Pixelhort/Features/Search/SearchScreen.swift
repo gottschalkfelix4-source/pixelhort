@@ -71,7 +71,18 @@ struct SearchScreen: View {
         isSearching = true
         defer { isSearching = false }
         do {
-            let response = try await api.smartSearch(query: text, page: page)
+            // Without the ML service, fall back to searching file names (same as the web app).
+            let smart = session.serverInfo?.features?.smartSearch ?? true
+            let response: SearchResponse
+            if smart {
+                do {
+                    response = try await api.smartSearch(query: text, page: page)
+                } catch {
+                    response = try await api.metadataSearch(MetadataSearchRequest(originalFileName: text, page: page, size: 100))
+                }
+            } else {
+                response = try await api.metadataSearch(MetadataSearchRequest(originalFileName: text, page: page, size: 100))
+            }
             results.append(contentsOf: response.assets)
             nextPage = response.nextPage
         } catch {
