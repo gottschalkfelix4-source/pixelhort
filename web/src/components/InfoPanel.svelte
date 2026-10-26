@@ -3,7 +3,7 @@
   import MiniMap from './MiniMap.svelte';
   import Pickers from './Pickers.svelte';
   import { api, personThumbnailUrl, thumbnailUrl, type AssetDto, type FaceDto, type ShareAccess } from '../lib/api';
-  import { auth, promptDialog, toastError } from '../lib/state.svelte';
+  import { auth, prefs, promptDialog, toast, toastError } from '../lib/state.svelte';
   import { formatAbs, formatBytes, formatLocal } from '../lib/utils';
   import { t } from '../lib/i18n';
 
@@ -63,6 +63,26 @@
     const cur = asset.localDateTime?.slice(0, 16) ?? '';
     const v = await promptDialog(t('dateTaken'), { value: cur, inputType: 'datetime-local' });
     if (v) update({ dateTimeOriginal: `${v.length === 16 ? v + ':00' : v}Z` });
+  }
+
+  async function setCover(f: FaceDto) {
+    if (!f.person) return;
+    try {
+      await api.updatePerson(f.person.id, { featureFaceId: f.id });
+      toast(t('coverUpdated'), 'success');
+    } catch (e) {
+      toastError(e);
+    }
+  }
+
+  async function editLocation() {
+    const cur = exif?.latitude != null && exif?.longitude != null ? `${exif.latitude}, ${exif.longitude}` : '';
+    const v = await promptDialog(t('setLocation'), { value: cur, placeholder: t('locationPrompt') });
+    if (!v?.trim()) return;
+    const [lat, lon] = v.split(/[,;\s]+/).filter(Boolean).map(Number);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180)
+      return toast(t('invalidLocation'), 'error');
+    update({ latitude: lat, longitude: lon });
   }
 
   async function reloadAsset() {
@@ -127,7 +147,7 @@
     {/if}
   </section>
 
-  {#if canEdit || asset.rating}
+  {#if prefs.value.ratings.enabled && (canEdit || asset.rating)}
     <section class="rating">
       {#each [1, 2, 3, 4, 5] as r (r)}
         <button class="star" disabled={!canEdit} onclick={() => setRating(r)} aria-label="{t('rating')} {r}">
@@ -148,6 +168,11 @@
               ></button>
               {#if f.person}
                 <a href="/people/{f.person.id}" class="small">{f.person.name || t('unnamedPerson')}</a>
+                {#if canEdit}
+                  <button class="cover-btn" onclick={() => setCover(f)} title={t('setAsPersonCover')} aria-label={t('setAsPersonCover')}
+                    ><Icon name="person" size={14} /></button
+                  >
+                {/if}
               {:else}
                 <span class="small muted">{t('unnamedPerson')}</span>
               {/if}
@@ -196,12 +221,15 @@
         </div>
       </div>
     {/if}
-    {#if placeLine || (exif?.latitude != null && exif?.longitude != null)}
+    {#if placeLine || (exif?.latitude != null && exif?.longitude != null) || canEdit}
       <div class="line">
         <Icon name="place" />
         <div class="grow">
           {#if placeLine}<div>{placeLine}</div>{/if}
-          {#if exif?.latitude != null && exif?.longitude != null}
+          {#if canEdit}
+            <button class="btn text small loc-btn" onclick={editLocation}><Icon name="edit" size={16} /> {t('setLocation')}</button>
+          {/if}
+          {#if exif?.latitude != null && exif?.longitude != null && auth.serverInfo?.features.map !== false}
             <MiniMap lat={exif.latitude} lon={exif.longitude} />
           {/if}
         </div>
@@ -295,6 +323,17 @@
     letter-spacing: 0.06em;
     color: var(--fg-muted);
     margin-bottom: 10px;
+  }
+  .cover-btn {
+    border: none;
+    background: none;
+    color: var(--fg-muted);
+    cursor: pointer;
+    padding: 2px;
+    line-height: 0;
+  }
+  .cover-btn:hover {
+    color: var(--primary);
   }
   .rating {
     display: flex;

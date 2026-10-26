@@ -35,6 +35,15 @@ struct SettingsScreen: View {
                         newName = user.name
                         showEditName = true
                     }
+                    if user.oauthId == nil || session.authStatus?.passwordLoginEnabled != false {
+                        NavigationLink("settings.changePassword") { ChangePasswordView() }
+                    }
+                    NavigationLink {
+                        DevicesView()
+                    } label: {
+                        Label("settings.devices", systemImage: "laptopcomputer.and.iphone")
+                    }
+                    .accessibilityIdentifier("settings.devices")
                 } else {
                     ProgressView()
                 }
@@ -62,6 +71,16 @@ struct SettingsScreen: View {
                     LabeledContent("settings.columns") { Text(verbatim: "\(columnCount)") }
                 }
                 Toggle("partners.showInTimeline", isOn: $withPartners)
+            }
+
+            Section {
+                Toggle("settings.feature.memories", isOn: preferenceBinding(\.memories.enabled))
+                Toggle("settings.feature.people", isOn: preferenceBinding(\.people.enabled))
+                Toggle("settings.feature.sharedLinks", isOn: preferenceBinding(\.sharedLinks.enabled))
+            } header: {
+                Text("settings.features")
+            } footer: {
+                Text("settings.features.footer")
             }
 
             Section("settings.server") {
@@ -112,6 +131,22 @@ struct SettingsScreen: View {
             Button("common.cancel", role: .cancel) {}
         }
         .errorAlert($errorMessage)
+    }
+
+    /// Binding that writes a preference to the server and shows errors.
+    private func preferenceBinding(_ keyPath: WritableKeyPath<UserPreferences, Bool>) -> Binding<Bool> {
+        Binding(
+            get: { session.preferences[keyPath: keyPath] },
+            set: { value in
+                Task {
+                    do {
+                        try await session.updatePreferences { $0[keyPath: keyPath] = value }
+                    } catch {
+                        errorMessage = error.localizedDescription
+                    }
+                }
+            }
+        )
     }
 
     private func format(_ bytes: Int64) -> String {

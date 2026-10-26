@@ -72,6 +72,26 @@ extension APIClient {
         try await get("/api/users")
     }
 
+    func preferences() async throws -> UserPreferences {
+        try await get("/api/users/me/preferences")
+    }
+
+    func updatePreferences(_ preferences: UserPreferences) async throws -> UserPreferences {
+        try await send(.put, "/api/users/me/preferences", body: preferences)
+    }
+
+    func sessions() async throws -> [AuthSessionDto] {
+        try await get("/api/sessions")
+    }
+
+    func deleteSession(id: String) async throws {
+        try await sendVoid(.delete, "/api/sessions/\(id)")
+    }
+
+    func deleteOtherSessions() async throws {
+        try await sendVoid(.delete, "/api/sessions")
+    }
+
     // MARK: Assets
 
     func asset(id: String) async throws -> AssetDto {

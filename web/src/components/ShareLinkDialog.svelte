@@ -44,6 +44,7 @@
         const patch: Parameters<typeof api.updateSharedLink>[1] = {
           description,
           expiresAt: fromDateTimeLocal(expires),
+          clearExpiry: !expires,
           allowDownload,
           allowUpload,
           showMetadata,
@@ -62,6 +63,7 @@
           description: description || undefined,
           password: password || undefined,
           expiresAt: fromDateTimeLocal(expires),
+          clearExpiry: !expires,
           allowDownload,
           allowUpload,
           showMetadata,

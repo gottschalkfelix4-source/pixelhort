@@ -31,6 +31,8 @@ pub fn router() -> Router<SharedState> {
         .route("/auth/session", get(session_info))
         .route("/auth/session/unlock", post(unlock))
         .route("/auth/session/lock", post(lock))
+        .route("/sessions", get(list_sessions).delete(delete_other_sessions))
+        .route("/sessions/{id}", axum::routing::delete(delete_session))
 }
 
 async fn status(State(state): State<SharedState>) -> AppResult<Json<Value>> {
@@ -41,6 +43,7 @@ async fn status(State(state): State<SharedState>) -> AppResult<Json<Value>> {
         "oauthEnabled": sys.oauth.enabled,
         "oauthButtonText": sys.oauth.button_text,
         "passwordLoginEnabled": sys.password_login.enabled,
+        "loginPageMessage": sys.server.login_page_message,
     })))
 }
 
@@ -145,6 +148,51 @@ async fn session_info(State(state): State<SharedState>, auth: Auth) -> AppResult
         "unlockedUntil": unlocked_until.filter(|t| *t > Utc::now()),
         "hasPin": auth.user.pin_hash.is_some(),
     })))
+}
+
+async fn list_sessions(State(state): State<SharedState>, auth: Auth) -> AppResult<Json<Value>> {
+    #[allow(clippy::type_complexity)]
+    let rows: Vec<(Uuid, Option<String>, Option<String>, chrono::DateTime<Utc>, chrono::DateTime<Utc>)> = sqlx::query_as(
+        "SELECT id, device_type, device_name, created_at, last_used_at FROM sessions
+         WHERE user_id = $1 ORDER BY last_used_at DESC",
+    )
+    .bind(auth.id())
+    .fetch_all(&state.db)
+    .await?;
+    Ok(Json(json!(rows
+        .into_iter()
+        .map(|(id, device_type, device_name, created, used)| json!({
+            "id": id, "deviceType": device_type, "deviceName": device_name,
+            "createdAt": created, "lastUsedAt": used, "current": Some(id) == auth.session_id,
+        }))
+        .collect::<Vec<_>>())))
+}
+
+async fn delete_session(
+    State(state): State<SharedState>,
+    auth: Auth,
+    axum::extract::Path(id): axum::extract::Path<Uuid>,
+) -> AppResult<StatusCode> {
+    let n = sqlx::query("DELETE FROM sessions WHERE id = $1 AND user_id = $2")
+        .bind(id)
+        .bind(auth.id())
+        .execute(&state.db)
+        .await?
+        .rows_affected();
+    if n == 0 {
+        return Err(AppError::not_found());
+    }
+    Ok(StatusCode::NO_CONTENT)
+}
+
+/// Logs out every other device of the current user.
+async fn delete_other_sessions(State(state): State<SharedState>, auth: Auth) -> AppResult<StatusCode> {
+    sqlx::query("DELETE FROM sessions WHERE user_id = $1 AND id IS DISTINCT FROM $2")
+        .bind(auth.id())
+        .bind(auth.session_id)
+        .execute(&state.db)
+        .await?;
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[derive(Deserialize)]
@@ -320,13 +368,14 @@ async fn oauth_callback(State(state): State<SharedState>, Json(req): Json<Callba
             let email = email.ok_or_else(|| AppError::bad("OAuth provider did not return an email"))?;
             let first: bool = sqlx::query_scalar("SELECT NOT EXISTS (SELECT 1 FROM users)").fetch_one(&state.db).await?;
             sqlx::query_as(
-                "INSERT INTO users (id, email, name, oauth_id, is_admin) VALUES ($1,$2,$3,$4,$5) RETURNING *",
+                "INSERT INTO users (id, email, name, oauth_id, is_admin, quota_bytes) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *",
             )
             .bind(Uuid::new_v4())
             .bind(email)
             .bind(name)
             .bind(sub)
             .bind(first)
+            .bind(if first { None } else { state.sys().user.default_quota_bytes })
             .fetch_one(&state.db)
             .await?
         }

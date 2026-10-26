@@ -331,7 +331,9 @@ struct UpdateAsset {
     is_favorite: Option<bool>,
     visibility: Option<String>,
     description: Option<String>,
-    rating: Option<i16>,
+    /// `null` removes the rating.
+    #[serde(default, with = "crate::model::double_option")]
+    rating: Option<Option<i16>>,
     date_time_original: Option<String>,
     latitude: Option<f64>,
     longitude: Option<f64>,
@@ -375,19 +377,20 @@ async fn update_one(
     if let Some(v) = &req.visibility {
         apply_visibility(&state, &auth, &[id], v).await?;
     }
-    if let Some(r) = req.rating {
+    if let Some(Some(r)) = req.rating {
         if !(0..=5).contains(&r) {
             return Err(AppError::bad("rating must be 0-5"));
         }
     }
     sqlx::query(
         "UPDATE assets SET is_favorite = COALESCE($2, is_favorite), description = COALESCE($3, description),
-            rating = COALESCE($4, rating), updated_at = now() WHERE id = $1",
+            rating = CASE WHEN $5 THEN $4 ELSE rating END, updated_at = now() WHERE id = $1",
     )
     .bind(id)
     .bind(req.is_favorite)
     .bind(&req.description)
-    .bind(req.rating)
+    .bind(req.rating.flatten())
+    .bind(req.rating.is_some())
     .execute(&state.db)
     .await?;
     if let Some(d) = &req.date_time_original {
@@ -830,8 +833,8 @@ async fn delete_edits(State(state): State<SharedState>, auth: Auth, Path(id): Pa
 // ------------------------------------------------------------------ cast
 
 pub fn public_base(state: &SharedState, headers: &HeaderMap) -> String {
-    if let Some(u) = &state.config.public_url {
-        return u.clone();
+    if let Some(u) = state.public_url() {
+        return u;
     }
     let host = headers
         .get("x-forwarded-host")

@@ -100,7 +100,9 @@ async fn get_one(State(state): State<SharedState>, auth: Auth, Path(id): Path<Uu
 #[serde(rename_all = "camelCase")]
 struct UpdatePerson {
     name: Option<String>,
-    birth_date: Option<NaiveDate>,
+    /// `null` removes the birth date.
+    #[serde(default, with = "crate::model::double_option")]
+    birth_date: Option<Option<NaiveDate>>,
     is_hidden: Option<bool>,
     feature_face_id: Option<Uuid>,
 }
@@ -119,15 +121,16 @@ async fn update(State(state): State<SharedState>, auth: Auth, Path(id): Path<Uui
         let _ = tokio::fs::remove_file(state.storage.person_thumb_path(auth.id(), id)).await;
     }
     sqlx::query(
-        "UPDATE people SET name = COALESCE($2, name), birth_date = COALESCE($3, birth_date),
+        "UPDATE people SET name = COALESCE($2, name), birth_date = CASE WHEN $6 THEN $3 ELSE birth_date END,
             is_hidden = COALESCE($4, is_hidden), feature_face_id = COALESCE($5, feature_face_id), updated_at = now()
          WHERE id = $1",
     )
     .bind(id)
     .bind(req.name.map(|n| n.trim().to_string()))
-    .bind(req.birth_date)
+    .bind(req.birth_date.flatten())
     .bind(req.is_hidden)
     .bind(req.feature_face_id)
+    .bind(req.birth_date.is_some())
     .execute(&state.db)
     .await?;
     Ok(Json(person_value(&state, auth.id(), id).await?))

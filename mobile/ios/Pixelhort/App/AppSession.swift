@@ -20,6 +20,8 @@ final class AppSession {
     private(set) var authStatus: AuthStatus?
     private(set) var serverInfo: ServerInfo?
     private(set) var user: UserDto?
+    /// Server-side user preferences (feature toggles); defaults until loaded.
+    private(set) var preferences = UserPreferences()
     private(set) var api: APIClient?
 
     let deviceId: String
@@ -102,6 +104,22 @@ final class AppSession {
             // Offline: keep the session, views will show errors.
         }
         serverInfo = try? await api.serverInfo()
+        if let prefs = try? await api.preferences() {
+            preferences = prefs
+        }
+    }
+
+    func updatePreferences(_ change: (inout UserPreferences) -> Void) async throws {
+        guard let api else { throw APIError.notLoggedIn }
+        var next = preferences
+        change(&next)
+        preferences = next
+        do {
+            preferences = try await api.updatePreferences(next)
+        } catch {
+            if let current = try? await api.preferences() { preferences = current }
+            throw error
+        }
     }
 
     func updateUser(_ user: UserDto) {
@@ -117,6 +135,7 @@ final class AppSession {
         KeychainStore.set(nil, for: .lockedFolderPin)
         api = nil
         user = nil
+        preferences = UserPreferences()
         await ImageLoader.shared.clearAll()
         await UploadStateStore.shared.removeAll()
         phase = serverURL == nil ? .serverSetup : .login

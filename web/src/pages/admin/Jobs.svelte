@@ -65,6 +65,7 @@
           <button class="btn small" onclick={() => cmd(q, 'pause')}><Icon name="pause" size={16} /> {t('jobPause')}</button>
         {/if}
         {#if (s?.failed ?? 0) > 0}
+          <button class="btn small" onclick={() => cmd(q, 'retry-failed')}><Icon name="refresh" size={16} /> {t('jobRetryFailed')}</button>
           <button class="btn small danger" onclick={() => cmd(q, 'clear-failed')}>{t('jobClearFailed')}</button>
         {/if}
       </div>

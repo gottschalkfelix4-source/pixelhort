@@ -164,7 +164,7 @@
 </div>
 
 {#if scrubber && years.length > 1 && !pickMode}
-  <nav class="scrubber" aria-label="Jahre">
+  <nav class="scrubber" aria-label={t('years')}>
     {#each years as y (y.year)}
       <button style="top: {y.pos * 100}%" onclick={() => scrollToBucket(y.bucket)}>{y.year}</button>
     {/each}

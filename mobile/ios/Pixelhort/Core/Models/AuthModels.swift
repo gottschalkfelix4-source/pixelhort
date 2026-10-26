@@ -115,6 +115,34 @@ struct UserSummary: Codable, Identifiable, Hashable, Sendable {
     var email: String?
 }
 
+/// A login session of the current user (`GET /api/sessions`).
+struct AuthSessionDto: Decodable, Hashable, Identifiable, Sendable {
+    let id: String
+    var deviceType: String?
+    var deviceName: String?
+    var createdAt: Date
+    var lastUsedAt: Date
+    var current: Bool
+}
+
+/// Per-user preferences stored on the server (`/api/users/me/preferences`).
+struct UserPreferences: Codable, Hashable, Sendable {
+    struct Feature: Codable, Hashable, Sendable {
+        var enabled: Bool
+    }
+
+    struct Download: Codable, Hashable, Sendable {
+        var includeLiveVideo: Bool
+    }
+
+    var memories = Feature(enabled: true)
+    var people = Feature(enabled: true)
+    var tags = Feature(enabled: true)
+    var ratings = Feature(enabled: true)
+    var sharedLinks = Feature(enabled: true)
+    var download = Download(includeLiveVideo: false)
+}
+
 struct UpdateMeRequest: Encodable, Sendable {
     var name: String?
     var email: String?

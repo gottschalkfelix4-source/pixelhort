@@ -18,6 +18,7 @@ export interface AuthStatus {
   oauthEnabled: boolean;
   oauthButtonText: string;
   passwordLoginEnabled: boolean;
+  loginPageMessage?: string;
 }
 
 export interface UserDto {
@@ -45,9 +46,27 @@ export interface LoginResponse {
 }
 
 export interface SessionInfo {
-  id: Uuid;
+  id: Uuid | null;
   unlockedUntil: IsoDate | null;
   hasPin: boolean;
+}
+
+export interface AuthSessionDto {
+  id: Uuid;
+  deviceType: string | null;
+  deviceName: string | null;
+  createdAt: IsoDate;
+  lastUsedAt: IsoDate;
+  current: boolean;
+}
+
+export interface UserPreferences {
+  memories: { enabled: boolean };
+  people: { enabled: boolean };
+  tags: { enabled: boolean };
+  ratings: { enabled: boolean };
+  sharedLinks: { enabled: boolean };
+  download: { includeLiveVideo: boolean };
 }
 
 export interface ApiKeyDto {
@@ -87,6 +106,11 @@ export interface SystemConfig {
     autoRegister: boolean;
     mobileRedirectUri: string;
   };
+  server: { externalDomain: string; loginPageMessage: string };
+  user: { defaultQuotaBytes: number | null };
+  library: { scanEnabled: boolean; scanCron: string };
+  image: { previewSize: number; previewQuality: number; thumbnailSize: number; thumbnailQuality: number };
+  map: { enabled: boolean; tileUrl: string; attribution: string };
 }
 export type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K] };
 
@@ -114,7 +138,8 @@ export type JobQueue =
   | 'objects'
   | 'duplicates'
   | 'library'
-  | 'backup';
+  | 'backup'
+  | 'cleanup';
 export const JOB_QUEUES: JobQueue[] = [
   'metadata',
   'thumbnails',
@@ -127,8 +152,9 @@ export const JOB_QUEUES: JobQueue[] = [
   'duplicates',
   'library',
   'backup',
+  'cleanup',
 ];
-export type JobCommand = 'start' | 'pause' | 'resume' | 'clear-failed';
+export type JobCommand = 'start' | 'pause' | 'resume' | 'clear-failed' | 'retry-failed';
 
 export interface ServerInfo {
   version: string;
@@ -140,8 +166,12 @@ export interface ServerInfo {
     oauth: boolean;
     reverseGeocoding: boolean;
     cast: boolean;
+    map?: boolean;
   };
-  publicUrl: string;
+  publicUrl: string | null;
+  mapTileUrl?: string;
+  mapAttribution?: string;
+  trashDays?: number;
 }
 
 export interface ServerStatistics {
@@ -479,6 +509,8 @@ export interface SharedLinkCreate {
   allowDownload?: boolean;
   allowUpload?: boolean;
   showMetadata?: boolean;
+  /** Update only: removes the expiry date. */
+  clearExpiry?: boolean;
 }
 export interface SharedLinkMe {
   link: SharedLinkDto;
@@ -642,11 +674,17 @@ export const api = {
   unlockSession: (pin: string) => post<{ unlockedUntil: IsoDate }>('/auth/session/unlock', { pin }),
   lockSession: () => post<void>('/auth/session/lock'),
   session: () => get<SessionInfo>('/auth/session'),
+  sessions: () => get<AuthSessionDto[]>('/sessions'),
+  deleteSession: (id: Uuid) => del<void>(`/sessions/${id}`),
+  deleteOtherSessions: () => del<void>('/sessions'),
 
   // Users
   me: (silent = false) => get<UserDto>('/users/me', undefined, { silent }),
   updateMe: (b: { name?: string; email?: string; password?: string; currentPassword?: string }) => put<UserDto>('/users/me', b),
   setPin: (b: { pin: string; currentPin?: string }) => put<void>('/users/me/pin', b),
+  resetPin: (password?: string) => del<void>('/users/me/pin', { password }),
+  preferences: () => get<UserPreferences>('/users/me/preferences'),
+  updatePreferences: (p: DeepPartial<UserPreferences>) => put<UserPreferences>('/users/me/preferences', p),
   users: () => get<UserSummary[]>('/users'),
   apiKeys: () => get<ApiKeyDto[]>('/api-keys'),
   createApiKey: (name: string) => post<ApiKeyCreated>('/api-keys', { name }),

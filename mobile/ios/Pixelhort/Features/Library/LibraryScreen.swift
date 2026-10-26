@@ -2,6 +2,8 @@ import SwiftUI
 
 /// "Bibliothek" tab: entry points to filtered views and sharing features.
 struct LibraryScreen: View {
+    @Environment(AppSession.self) private var session
+
     var body: some View {
         List {
             Section {
@@ -30,10 +32,12 @@ struct LibraryScreen: View {
             }
 
             Section("library.section.explore") {
-                NavigationLink {
-                    PeopleView()
-                } label: {
-                    Label("library.people", systemImage: "person.2")
+                if session.preferences.people.enabled {
+                    NavigationLink {
+                        PeopleView()
+                    } label: {
+                        Label("library.people", systemImage: "person.2")
+                    }
                 }
                 NavigationLink {
                     MapScreen()
@@ -43,10 +47,12 @@ struct LibraryScreen: View {
             }
 
             Section("library.section.sharing") {
-                NavigationLink {
-                    SharedLinksView()
-                } label: {
-                    Label("library.sharedLinks", systemImage: "link")
+                if session.preferences.sharedLinks.enabled {
+                    NavigationLink {
+                        SharedLinksView()
+                    } label: {
+                        Label("library.sharedLinks", systemImage: "link")
+                    }
                 }
                 NavigationLink {
                     PartnersView()

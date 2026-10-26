@@ -29,11 +29,7 @@
   });
 
   $effect(() => {
-    if (auth.user?.isAdmin)
-      api
-        .getConfig()
-        .then((c) => (days = c.trash.days))
-        .catch(() => {});
+    if (auth.serverInfo?.trashDays !== undefined) days = auth.serverInfo.trashDays;
   });
 
   async function restoreAll() {

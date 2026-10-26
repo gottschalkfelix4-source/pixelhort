@@ -3,7 +3,7 @@
   import SelectionBar from '../components/SelectionBar.svelte';
   import Memories from '../components/Memories.svelte';
   import { Selection } from '../lib/selection.svelte';
-  import { ui, writePref } from '../lib/state.svelte';
+  import { prefs, ui, writePref } from '../lib/state.svelte';
   import { t } from '../lib/i18n';
 
   const selection = new Selection();
@@ -18,7 +18,7 @@
 <div class="page">
   <Timeline {filters} {selection}>
     {#snippet header()}
-      <Memories />
+      {#if prefs.value.memories.enabled}<Memories />{/if}
       <div class="row toolbar">
         <span class="spacer"></span>
         <label class="check small muted"><input type="checkbox" checked={ui.withPartners} onchange={togglePartners} /> {t('showPartners')}</label>

@@ -55,7 +55,7 @@ For SSO, configure the server's OAuth provider with the mobile redirect URI
 | Shared links | Create (description, password, expiry, download/upload/metadata), list with `ShareLink`, copy, delete. |
 | Partners | Share my library, accept/hide partner libraries in the timeline (`inTimeline`), timeline `withPartners` toggle. |
 | Locked folder | PIN setup (`PUT /api/users/me/pin`), unlock (`POST /api/auth/session/unlock`), auto-lock on leave. Face ID/Touch ID (LocalAuthentication) is a convenience gate releasing the PIN stored in the Keychain. |
-| Settings | Account (name, storage quota), backup options, grid columns, partner photos, server/app info, image cache, logout. |
+| Settings | Account (name, password, storage quota, signed-in devices with sign-out), feature toggles shared with the web app (`/api/users/me/preferences`: memories, people, shared links), backup options, grid columns, partner photos, server/app info, image cache, logout. |
 
 ## Source layout
 
@@ -87,6 +87,12 @@ sh Tools/check-core.sh     # swiftc -typecheck (Swift 5 + Swift 6 mode) + Tools/
 ```
 
 The UI and PhotoKit/AVKit/MapKit code can only be compiled with Xcode on macOS.
+
+UI tests (`PixelhortUITests`, run against a server on `localhost:2342`, user `ios@example.com`):
+`BackupFlowUITests` (login → backup → timeline, needs a fresh install) and `FeatureTourUITests`
+(prepares data through the API, then checks every library feature, the devices list and search).
+Note: unsigned simulator builds (`CODE_SIGNING_ALLOWED=NO`) cannot write to the Keychain, so the login
+is not kept across app restarts there; ad-hoc signed builds (`CODE_SIGN_IDENTITY=-`) keep it.
 
 ## Optional: Google Cast (Chromecast)
 

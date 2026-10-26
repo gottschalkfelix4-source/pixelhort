@@ -24,7 +24,7 @@ app (`web/`), the CLI (`crates/cli`) and the mobile apps (`mobile/android`,
 
 | Method | Path | Body | Response |
 |---|---|---|---|
-| GET | `/api/auth/status` | – | `{"setupRequired":bool,"oauthEnabled":bool,"oauthButtonText":"Login with SSO","passwordLoginEnabled":bool}` |
+| GET | `/api/auth/status` | – | `{"setupRequired":bool,"oauthEnabled":bool,"oauthButtonText":"Login with SSO","passwordLoginEnabled":bool,"loginPageMessage":""}` |
 | POST | `/api/auth/setup` | `{"email","password","name"}` – only works while no user exists; creates admin | `LoginResponse` |
 | POST | `/api/auth/login` | `{"email","password","deviceType?":"web/android/ios/cli","deviceName?"}` | `LoginResponse` (also sets `ph_session` cookie) |
 | POST | `/api/auth/logout` | – | `204` |
@@ -32,7 +32,10 @@ app (`web/`), the CLI (`crates/cli`) and the mobile apps (`mobile/android`,
 | POST | `/api/auth/oauth/callback` | `{"url":"<full redirect url incl. ?code=&state=>"}` | `LoginResponse` |
 | POST | `/api/auth/session/unlock` | `{"pin":"1234"}` | `{"unlockedUntil":"..."}` (locked folder access for 15 min) |
 | POST | `/api/auth/session/lock` | – | `204` |
-| GET | `/api/auth/session` | – | `{"id","unlockedUntil":null\|"...","hasPin":bool}` |
+| GET | `/api/auth/session` | – | `{"id","unlockedUntil":null\|"...","hasPin":bool}` (`id` is null for API keys) |
+| GET | `/api/sessions` | – | `[{"id","deviceType","deviceName","createdAt","lastUsedAt","current":bool}]` – signed-in devices of the current user |
+| DELETE | `/api/sessions/{id}` | – | `204` (signs out that device) |
+| DELETE | `/api/sessions` | – | `204` (signs out all devices except the current one) |
 
 `LoginResponse`:
 ```json
@@ -54,6 +57,9 @@ OAuth redirect URIs: web uses `<publicUrl>/auth/oauth-callback`, mobile uses
 | GET | `/api/users/me` | – | `UserDto` |
 | PUT | `/api/users/me` | `{"name?","email?","password?","currentPassword?"}` | `UserDto` |
 | PUT | `/api/users/me/pin` | `{"pin":"1234","currentPin?":"0000"}` (4–8 digits) | `204` |
+| DELETE | `/api/users/me/pin` | `{"password":"..."}` (account password; omitted for OAuth-only accounts) | `204` – removes a forgotten PIN; locked assets stay locked |
+| GET | `/api/users/me/preferences` | – | `UserPreferences` |
+| PUT | `/api/users/me/preferences` | `UserPreferences` (partial allowed) | `UserPreferences` |
 | GET | `/api/users` | – | `[UserSummary]` – all users (for sharing pickers) |
 | GET | `/api/api-keys` | – | `[{"id","name","createdAt"}]` |
 | POST | `/api/api-keys` | `{"name"}` | `{"id","name","createdAt","secret":"phk_..."}` (secret shown once) |
@@ -61,12 +67,18 @@ OAuth redirect URIs: web uses `<publicUrl>/auth/oauth-callback`, mobile uses
 
 `UserSummary`: `{"id","name","email"}`
 
+`UserPreferences` (feature toggles shared by web and apps; missing keys take these defaults):
+```json
+{"memories":{"enabled":true},"people":{"enabled":true},"tags":{"enabled":true},
+ "ratings":{"enabled":true},"sharedLinks":{"enabled":true},"download":{"includeLiveVideo":false}}
+```
+
 ### Admin (requires `isAdmin`)
 
 | Method | Path | Body | Response |
 |---|---|---|---|
 | GET | `/api/admin/users` | – | `[UserDto]` |
-| POST | `/api/admin/users` | `{"email","password","name","isAdmin?":false,"quotaBytes?":null}` | `UserDto` |
+| POST | `/api/admin/users` | `{"email","password","name","isAdmin?":false,"quotaBytes?"}` (missing: `user.defaultQuotaBytes`, `null`: unlimited) | `UserDto` |
 | PUT | `/api/admin/users/{id}` | `{"name?","email?","password?","isAdmin?","quotaBytes?"}` | `UserDto` |
 | DELETE | `/api/admin/users/{id}` | – | `204` (deletes user and all their assets) |
 | GET | `/api/admin/config` | – | `SystemConfig` (see below) |
@@ -76,10 +88,10 @@ OAuth redirect URIs: web uses `<publicUrl>/auth/oauth-callback`, mobile uses
 | GET | `/api/admin/backups/{name}` | – | file download |
 | DELETE | `/api/admin/backups/{name}` | – | `204` |
 | GET | `/api/jobs` | – | `{"<queue>":{"active":0,"waiting":3,"failed":1,"completed":10,"paused":false}}` |
-| POST | `/api/jobs/{queue}` | `{"command":"start"\|"pause"\|"resume"\|"clear-failed","force?":false}` | `204` |
+| POST | `/api/jobs/{queue}` | `{"command":"start"\|"pause"\|"resume"\|"clear-failed"\|"retry-failed","force?":false}` | `204` |
 
 Queues: `metadata`, `thumbnails`, `video`, `smart-search`, `faces`, `facial-recognition`,
-`ocr`, `objects`, `duplicates`, `library`, `backup`.
+`ocr`, `objects`, `duplicates`, `library`, `backup`, `cleanup`.
 `start` enqueues all assets missing that step (or all assets with `force:true`).
 
 `SystemConfig`:
@@ -94,16 +106,24 @@ Queues: `metadata`, `thumbnails`, `video`, `smart-search`, `faces`, `facial-reco
  "reverseGeocoding": {"enabled":true},
  "passwordLogin": {"enabled":true},
  "oauth": {"enabled":false,"issuerUrl":"","clientId":"","clientSecret":"","scope":"openid email profile",
-           "buttonText":"Login with SSO","autoRegister":true,"mobileRedirectUri":"app.pixelhort:/oauth-callback"}
+           "buttonText":"Login with SSO","autoRegister":true,"mobileRedirectUri":"app.pixelhort:/oauth-callback"},
+ "server": {"externalDomain":"","loginPageMessage":""},
+ "user": {"defaultQuotaBytes":null},
+ "library": {"scanEnabled":true,"scanCron":"0 0 * * * *"},
+ "image": {"previewSize":1440,"previewQuality":82,"thumbnailSize":250,"thumbnailQuality":78},
+ "map": {"enabled":true,"tileUrl":"https://tile.openstreetmap.org/{z}/{x}/{y}.png","attribution":"© OpenStreetMap"}
 }
 ```
+
+`server.externalDomain` overrides `PH_PUBLIC_URL` for share links and cast URLs. Image settings apply to
+newly generated thumbnails (run the `thumbnails` queue with `force:true` to regenerate).
 
 ## Server
 
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/server/ping` | `{"res":"pong"}` (no auth) |
-| GET | `/api/server/info` | `{"version":"0.1.0","features":{"smartSearch":bool,"faces":bool,"ocr":bool,"objects":bool,"oauth":bool,"reverseGeocoding":bool,"cast":true},"publicUrl":"..."}` (no auth) |
+| GET | `/api/server/info` | `{"version":"0.1.0","features":{"smartSearch":bool,"faces":bool,"ocr":bool,"objects":bool,"oauth":bool,"reverseGeocoding":bool,"cast":true,"map":bool},"publicUrl":"...","mapTileUrl":"...","mapAttribution":"...","trashDays":30}` (no auth) |
 | GET | `/api/server/statistics` | admin: `{"photos":1,"videos":2,"usageBytes":3,"users":[{"userId","name","photos","videos","usageBytes"}]}` |
 
 Prometheus metrics: `GET /metrics` on the metrics listener (default port **9464**).
@@ -145,7 +165,7 @@ Prometheus metrics: `GET /metrics` on the metrics listener (default port **9464*
 | POST | `/api/assets/bulk-upload-check` | `{"assets":[{"id":"client-ref","checksum":"sha1 hex"}]}` | `{"results":[{"id":"client-ref","action":"accept"\|"reject","reason":"duplicate","assetId":"uuid"}]}` |
 | POST | `/api/assets/exist` | `{"deviceId","deviceAssetIds":["..."]}` | `{"existingIds":["..."]}` |
 | GET | `/api/assets/{id}` | – | `AssetDto` (full) |
-| PUT | `/api/assets/{id}` | `{"isFavorite?","visibility?","description?","rating?","dateTimeOriginal?","latitude?","longitude?"}` | `AssetDto` |
+| PUT | `/api/assets/{id}` | `{"isFavorite?","visibility?","description?","rating?","dateTimeOriginal?","latitude?","longitude?"}` (`"rating":null` removes the rating) | `AssetDto` |
 | PUT | `/api/assets` | `{"ids":[...],"isFavorite?","visibility?","rating?"}` | `204` |
 | DELETE | `/api/assets` | `{"ids":[...],"force?":false}` – moves to trash (`force` = delete permanently) | `204` |
 | GET | `/api/assets/{id}/original` | `?edited=true` renders edits into full resolution JPEG | file (supports `Range`) |
@@ -247,7 +267,7 @@ Common filter query parameters: `visibility` (default `timeline`; `archive`,
 |---|---|---|---|
 | GET | `/api/people?withHidden=false` | – | `{"people":[PersonDto],"total":10,"hidden":2}` |
 | GET | `/api/people/{id}` | – | `PersonDto` |
-| PUT | `/api/people/{id}` | `{"name?","birthDate?","isHidden?","featureFaceId?"}` | `PersonDto` |
+| PUT | `/api/people/{id}` | `{"name?","birthDate?","isHidden?","featureFaceId?"}` (`"birthDate":null` removes it) | `PersonDto` |
 | GET | `/api/people/{id}/thumbnail` | – | JPEG face crop |
 | GET | `/api/people/{id}/assets` | – | `[AssetDto]` |
 | POST | `/api/people/{id}/merge` | `{"ids":["otherPersonId"]}` | `PersonDto` |

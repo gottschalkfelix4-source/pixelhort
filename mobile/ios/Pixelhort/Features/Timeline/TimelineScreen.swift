@@ -2,13 +2,16 @@ import SwiftUI
 
 /// The main "Fotos" tab: memories carousel + full timeline.
 struct TimelineScreen: View {
+    @Environment(AppSession.self) private var session
     @Environment(BackupService.self) private var backup
     @AppStorage("timeline.withPartners") private var withPartners = false
     @State private var showBackup = false
 
     var body: some View {
         AssetTimelineView(context: .timeline(withPartners: withPartners)) {
-            MemoriesCarousel()
+            if session.preferences.memories.enabled {
+                MemoriesCarousel()
+            }
         }
         .navigationTitle("tab.photos")
         .toolbar {

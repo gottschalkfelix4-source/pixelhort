@@ -3,12 +3,12 @@
   import Pickers from '../components/Pickers.svelte';
   import ShareLinkDialog from '../components/ShareLinkDialog.svelte';
   import { api, thumbnailUrl, type PartnerDto, type SharedLinkDto } from '../lib/api';
-  import { bumpAssets, confirmDialog, toast, toastError } from '../lib/state.svelte';
+  import { bumpAssets, confirmDialog, prefs, toast, toastError } from '../lib/state.svelte';
   import { router, setQuery } from '../lib/router.svelte';
   import { copyText, formatAbs } from '../lib/utils';
   import { t } from '../lib/i18n';
 
-  const tab = $derived(router.query.get('tab') === 'partners' ? 'partners' : 'links');
+  const tab = $derived(router.query.get('tab') === 'partners' || !prefs.value.sharedLinks.enabled ? 'partners' : 'links');
   let links = $state<SharedLinkDto[]>([]);
   let sharedBy = $state<PartnerDto[]>([]);
   let sharedWith = $state<PartnerDto[]>([]);
@@ -84,7 +84,9 @@
 <div class="page">
   <div class="page-header"><h1>{t('navSharing')}</h1></div>
   <div class="tabs">
-    <button class:active={tab === 'links'} onclick={() => setQuery({ tab: null })}>{t('sharedLinks')}</button>
+    {#if prefs.value.sharedLinks.enabled}
+      <button class:active={tab === 'links'} onclick={() => setQuery({ tab: null })}>{t('sharedLinks')}</button>
+    {/if}
     <button class:active={tab === 'partners'} onclick={() => setQuery({ tab: 'partners' })}>{t('partners')}</button>
   </div>
 
@@ -115,7 +117,7 @@
               </div>
             </div>
             <div class="row acts">
-              <a class="icon-btn" href={l.url} target="_blank" rel="noopener" data-external aria-label="Open"><Icon name="openNew" /></a>
+              <a class="icon-btn" href={l.url} target="_blank" rel="noopener" data-external aria-label={t('open')}><Icon name="openNew" /></a>
               <button class="icon-btn" onclick={() => copy(l)} title={t('copyLink')} aria-label={t('copyLink')}><Icon name="copy" /></button>
               <button class="icon-btn" onclick={() => (editing = l)} title={t('edit')} aria-label={t('edit')}><Icon name="edit" /></button>
               <button class="icon-btn" onclick={() => remove(l)} title={t('delete')} aria-label={t('delete')}><Icon name="delete" /></button>

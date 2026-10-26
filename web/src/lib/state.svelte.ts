@@ -1,5 +1,15 @@
 // Global application state (Svelte 5 runes).
-import { api, setToken, type AssetDto, type AuthStatus, type ServerInfo, type ShareAccess, type UserDto } from './api';
+import {
+  api,
+  setToken,
+  type AssetDto,
+  type AuthStatus,
+  type DeepPartial,
+  type ServerInfo,
+  type ShareAccess,
+  type UserDto,
+  type UserPreferences,
+} from './api';
 
 // ───────────── Auth ─────────────
 class AuthState {
@@ -9,6 +19,31 @@ class AuthState {
   ready = $state(false);
 }
 export const auth = new AuthState();
+
+// ───────────── User preferences (stored on the server) ─────────────
+export const defaultPreferences: UserPreferences = {
+  memories: { enabled: true },
+  people: { enabled: true },
+  tags: { enabled: true },
+  ratings: { enabled: true },
+  sharedLinks: { enabled: true },
+  download: { includeLiveVideo: false },
+};
+class PrefsState {
+  value = $state<UserPreferences>(structuredClone(defaultPreferences));
+}
+export const prefs = new PrefsState();
+
+export function loadPreferences() {
+  api
+    .preferences()
+    .then((p) => (prefs.value = p))
+    .catch(() => {});
+}
+
+export async function updatePreferences(patch: DeepPartial<UserPreferences>) {
+  prefs.value = await api.updatePreferences(patch);
+}
 
 export async function initAuth() {
   try {
@@ -25,6 +60,7 @@ export async function initAuth() {
   if (auth.status && !auth.status.setupRequired) {
     try {
       auth.user = await api.me(true);
+      loadPreferences();
     } catch {
       auth.user = null;
     }
@@ -36,6 +72,7 @@ export function loggedIn(token: string, user: UserDto) {
   setToken(token);
   auth.user = user;
   if (auth.status) auth.status.setupRequired = false;
+  loadPreferences();
 }
 
 export async function logout() {
@@ -69,6 +106,10 @@ class UiState {
   theme = $state<ThemePref>(readPref<ThemePref>('ph_theme', 'system'));
   sidebarOpen = $state(false);
   withPartners = $state(readPref<string>('ph_with_partners', 'false') === 'true');
+  /** Per-browser playback settings. */
+  videoAutoplay = $state(readPref<string>('ph_video_autoplay', 'true') === 'true');
+  videoLoop = $state(readPref<string>('ph_video_loop', 'false') === 'true');
+  videoMuted = $state(readPref<string>('ph_video_muted', 'false') === 'true');
   /** Incremented whenever assets change (upload, delete, ...) so lists reload. */
   assetsVersion = $state(0);
 }

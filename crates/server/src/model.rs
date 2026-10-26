@@ -8,6 +8,15 @@ use uuid::Uuid;
 
 use crate::auth::UserRow;
 
+/// Distinguishes a missing field (`None`) from an explicit `null` (`Some(None)`).
+/// Use with `#[serde(default, with = "crate::model::double_option")]`.
+pub mod double_option {
+    use serde::{Deserialize, Deserializer};
+    pub fn deserialize<'de, D: Deserializer<'de>, T: Deserialize<'de>>(d: D) -> Result<Option<Option<T>>, D::Error> {
+        Option::<T>::deserialize(d).map(Some)
+    }
+}
+
 #[derive(Debug, Clone, FromRow)]
 pub struct AssetRow {
     pub id: Uuid,

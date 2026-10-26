@@ -33,6 +33,13 @@ impl AppState {
         self.sys.read().expect("config lock").clone()
     }
 
+    /// External base URL: admin setting first, then `PH_PUBLIC_URL`.
+    pub fn public_url(&self) -> Option<String> {
+        let domain = self.sys().server.external_domain;
+        let domain = domain.trim().trim_end_matches('/');
+        if domain.is_empty() { self.config.public_url.clone() } else { Some(domain.to_string()) }
+    }
+
     pub fn ml_url(&self) -> Option<String> {
         let sys = self.sys();
         if !sys.ml.enabled {

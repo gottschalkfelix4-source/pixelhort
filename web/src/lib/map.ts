@@ -1,5 +1,9 @@
 // Lazy loading of maplibre-gl with an OpenStreetMap raster style.
 import type { StyleSpecification } from 'maplibre-gl';
+import { auth } from './state.svelte';
+
+const OSM_TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const OSM_ATTRIBUTION = '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>';
 
 type Maplibre = typeof import('maplibre-gl');
 let loader: Promise<Maplibre> | null = null;
@@ -20,10 +24,10 @@ export function osmStyle(): StyleSpecification {
     sources: {
       osm: {
         type: 'raster',
-        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+        tiles: [auth.serverInfo?.mapTileUrl || OSM_TILES],
         tileSize: 256,
         maxzoom: 19,
-        attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+        attribution: auth.serverInfo?.mapTileUrl ? (auth.serverInfo.mapAttribution ?? '') : OSM_ATTRIBUTION,
       },
     },
     layers: [{ id: 'osm', type: 'raster', source: 'osm' }],

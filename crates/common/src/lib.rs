@@ -241,6 +241,8 @@ pub struct ServerFeatures {
     pub oauth: bool,
     pub reverse_geocoding: bool,
     pub cast: bool,
+    #[serde(default)]
+    pub map: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -249,6 +251,13 @@ pub struct ServerInfo {
     pub version: String,
     pub features: ServerFeatures,
     pub public_url: Option<String>,
+    #[serde(default)]
+    pub map_tile_url: String,
+    #[serde(default)]
+    pub map_attribution: String,
+    /// Days until trashed assets are deleted permanently (0 = never).
+    #[serde(default)]
+    pub trash_days: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -31,7 +31,7 @@ pub fn start(state: SharedState) {
             if due("0 30 0 * * *") {
                 let _ = state.jobs.enqueue("cleanup", None, json!({ "kind": "trash" })).await;
             }
-            if due("0 0 * * * *") {
+            if sys.library.scan_enabled && due(&sys.library.scan_cron) {
                 let _ = crate::jobs::start_queue(&state, "library", false).await;
             }
             last = now;

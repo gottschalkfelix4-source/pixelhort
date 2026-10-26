@@ -32,6 +32,15 @@ final class FeatureTourUITests: XCTestCase {
         XCTAssertTrue(text(containing: "years ago").waitForExistence(timeout: 20), "memories card missing")
         shot("memories")
 
+        // Settings: the signed-in devices list contains this session.
+        tabBar.buttons.element(boundBy: 4).tap()
+        let devices = app.descendants(matching: .any)["settings.devices"]
+        XCTAssertTrue(devices.waitForExistence(timeout: 10), "devices entry missing")
+        devices.tap()
+        XCTAssertTrue(text(equal: "This device").waitForExistence(timeout: 15), "current session not listed")
+        shot("devices")
+        back()
+
         // Album created on the server, plus creating one in the app.
         tabBar.buttons.element(boundBy: 2).tap()
         XCTAssertTrue(text(equal: "Urlaub").waitForExistence(timeout: 15), "album missing")

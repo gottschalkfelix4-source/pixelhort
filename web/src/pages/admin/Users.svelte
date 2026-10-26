@@ -10,7 +10,13 @@
   let editing = $state<UserDto | 'new' | null>(null);
   let form = $state({ name: '', email: '', password: '', isAdmin: false, quotaGb: '' });
 
+  let defaultQuotaGb = $state('');
+
   async function load() {
+    api
+      .getConfig()
+      .then((c) => (defaultQuotaGb = c.user.defaultQuotaBytes ? String(c.user.defaultQuotaBytes / 1024 ** 3) : ''))
+      .catch(() => {});
     try {
       users = await api.adminUsers();
     } catch (e) {
@@ -25,13 +31,14 @@
     editing = u;
     form =
       u === 'new'
-        ? { name: '', email: '', password: '', isAdmin: false, quotaGb: '' }
+        ? { name: '', email: '', password: '', isAdmin: false, quotaGb: defaultQuotaGb }
         : { name: u.name, email: u.email, password: '', isAdmin: u.isAdmin, quotaGb: u.quotaBytes ? String(u.quotaBytes / 1024 ** 3) : '' };
   }
 
   async function save(e: Event) {
     e.preventDefault();
-    const quotaBytes = form.quotaGb.trim() ? Math.round(parseFloat(form.quotaGb) * 1024 ** 3) : null;
+    const quotaGb = String(form.quotaGb ?? '').trim();
+    const quotaBytes = quotaGb && parseFloat(quotaGb) > 0 ? Math.round(parseFloat(quotaGb) * 1024 ** 3) : null;
     try {
       if (editing === 'new') {
         await api.adminCreateUser({ name: form.name, email: form.email, password: form.password, isAdmin: form.isAdmin, quotaBytes });

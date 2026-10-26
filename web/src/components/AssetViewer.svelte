@@ -7,8 +7,8 @@
   import ShareLinkDialog from './ShareLinkDialog.svelte';
   import CastDialog from './CastDialog.svelte';
   import { api, originalUrl, thumbnailUrl, videoUrl, type AssetDto } from '../lib/api';
-  import { auth, bumpAssets, closeViewer, confirmDialog, toast, toastError, viewer } from '../lib/state.svelte';
-  import { formatLocal, isWebImage, triggerDownload } from '../lib/utils';
+  import { auth, bumpAssets, closeViewer, confirmDialog, prefs, toast, toastError, ui, viewer } from '../lib/state.svelte';
+  import { downloadAsset, formatLocal, isWebImage } from '../lib/utils';
   import { t } from '../lib/i18n';
 
   const ctx = $derived(viewer.ctx!);
@@ -157,7 +157,7 @@
 
   function download() {
     if (!current || !canDownload) return;
-    triggerDownload(originalUrl(current.id, share, current.hasEdits), current.originalFileName);
+    downloadAsset(current, share, !share && prefs.value.download.includeLiveVideo);
   }
 
   let showCast = $state(false);
@@ -384,7 +384,16 @@
         {#key current.id}
           {#if current.type === 'VIDEO'}
             <!-- svelte-ignore a11y_media_has_caption -->
-            <video class="media" src={videoUrl(current.id, share)} poster={previewSrc} controls autoplay playsinline></video>
+            <video
+              class="media"
+              src={videoUrl(current.id, share)}
+              poster={previewSrc}
+              controls
+              autoplay={ui.videoAutoplay}
+              loop={ui.videoLoop}
+              muted={ui.videoMuted}
+              playsinline
+            ></video>
           {:else if is360}
             <SphereViewer src={fullSrc} />
           {:else if isPano}

@@ -63,6 +63,9 @@
       <h1>{setup ? t('setupTitle') : t('appName')}</h1>
       {#if setup}<p class="muted">{t('setupText')}</p>{:else}<p class="muted">{t('loginTitle')}</p>{/if}
     </div>
+    {#if !setup && auth.status?.loginPageMessage}
+      <p class="login-message">{auth.status.loginPageMessage}</p>
+    {/if}
 
     {#if !auth.status}
       <p class="error-text">{t('serverUnreachable')}</p>
@@ -99,6 +102,13 @@
 </div>
 
 <style>
+  .login-message {
+    white-space: pre-line;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--bg-soft);
+    margin: 0 0 12px;
+  }
   .wrap {
     min-height: 100vh;
     display: flex;

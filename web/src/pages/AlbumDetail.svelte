@@ -8,7 +8,7 @@
   import Icon from '../components/Icon.svelte';
   import { api, type ActivityDto, type AlbumDto, type AlbumRole } from '../lib/api';
   import { Selection } from '../lib/selection.svelte';
-  import { auth, bumpAssets, confirmDialog, toast, toastError, ui } from '../lib/state.svelte';
+  import { auth, bumpAssets, confirmDialog, toast, toastError, ui, prefs } from '../lib/state.svelte';
   import { navigate } from '../lib/router.svelte';
   import { pickFiles } from '../lib/upload.svelte';
   import { downloadAssets, formatAbs, formatLocal } from '../lib/utils';
@@ -205,7 +205,7 @@
           >
         {/if}
         {#if sorted.length}
-          <button class="icon-btn" title={t('downloadAll')} aria-label={t('downloadAll')} onclick={() => downloadAssets(sorted)}><Icon name="download" /></button>
+          <button class="icon-btn" title={t('downloadAll')} aria-label={t('downloadAll')} onclick={() => downloadAssets(sorted, null, prefs.value.download.includeLiveVideo)}><Icon name="download" /></button>
         {/if}
         <button class="icon-btn" title={isOwner ? t('deleteAlbum') : t('leaveAlbum')} aria-label={t('delete')} onclick={remove}
           ><Icon name={isOwner ? 'delete' : 'logout'} /></button
@@ -265,7 +265,7 @@
       </ul>
       <form class="row" onsubmit={sendComment}>
         <input type="text" bind:value={comment} placeholder={t('writeComment')} />
-        <button class="icon-btn" type="submit" aria-label="Send"><Icon name="send" /></button>
+        <button class="icon-btn" type="submit" aria-label={t('send')}><Icon name="send" /></button>
       </form>
     </aside>
   {/if}

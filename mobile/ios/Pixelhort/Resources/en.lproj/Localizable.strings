@@ -276,3 +276,24 @@
 "backup.status.wifi" = "Waiting for Wi-Fi";
 "backup.status.noPermission" = "No access to photos";
 "backup.status.disabled" = "Backup is turned off";
+
+/* Settings: account security, devices, features */
+"settings.changePassword" = "Change password";
+"settings.devices" = "Signed-in devices";
+"settings.features" = "Features";
+"settings.features.footer" = "Applies to all your devices and the web app.";
+"settings.feature.memories" = "Memories on the photos tab";
+"settings.feature.people" = "People";
+"settings.feature.sharedLinks" = "Shared links";
+"devices.current" = "This device";
+"devices.lastUsed %@" = "Last active: %@";
+"devices.signOut" = "Sign out";
+"devices.signOutOthers" = "Sign out all others";
+"devices.signOutOthers.confirm" = "All other devices will be signed out.";
+"devices.footer" = "Swipe left to sign out a device.";
+"devices.unknown" = "Unknown device";
+"password.current" = "Current password";
+"password.new" = "New password";
+"password.repeat" = "Repeat new password";
+"password.mismatch" = "The passwords do not match.";
+"password.footer" = "At least 8 characters. All other devices are signed out afterwards.";

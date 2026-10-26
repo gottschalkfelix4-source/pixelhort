@@ -19,7 +19,9 @@ struct MapScreen: View {
         Map(position: $position, selection: $selectedClusterId) {
             ForEach(clusters) { cluster in
                 Annotation(cluster.title, coordinate: cluster.coordinate) {
+                    // Annotation content is hosted separately and does not inherit the environment.
                     ClusterBadge(cluster: cluster)
+                        .environment(session)
                 }
                 .tag(cluster.id)
             }
@@ -65,10 +67,29 @@ struct MapScreen: View {
         do {
             markers = try await api.mapMarkers(isFavorite: favoritesOnly ? true : nil,
                                                withPartners: withPartners ? true : nil)
+            if let rect = Self.mapRect(fitting: markers) {
+                position = .rect(rect)
+            }
             recluster()
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Map rect containing all markers (with padding); MapKit fits it completely into the view,
+    /// so the photos are in sight after loading.
+    static func mapRect(fitting markers: [MapMarkerDto]) -> MKMapRect? {
+        guard !markers.isEmpty else { return nil }
+        var rect = MKMapRect.null
+        for marker in markers {
+            let point = MKMapPoint(CLLocationCoordinate2D(latitude: marker.lat, longitude: marker.lon))
+            rect = rect.union(MKMapRect(origin: point, size: MKMapSize(width: 0, height: 0)))
+        }
+        // At least ~2 km across, plus 20 % padding on each side.
+        let minSize = MKMapPointsPerMeterAtLatitude(MKMapPoint(x: rect.midX, y: rect.midY).coordinate.latitude) * 2000
+        let width = max(rect.width, minSize), height = max(rect.height, minSize)
+        let padded = MKMapRect(x: rect.midX - width * 0.7, y: rect.midY - height * 0.7, width: width * 1.4, height: height * 1.4)
+        return padded.intersection(.world)
     }
 
     /// Groups markers into a grid whose cell size depends on the visible span.

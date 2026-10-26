@@ -1,24 +1,44 @@
 <script lang="ts">
   import { api, type SystemConfig } from '../../lib/api';
-  import { toast, toastError } from '../../lib/state.svelte';
+  import { auth, toast, toastError } from '../../lib/state.svelte';
   import { t } from '../../lib/i18n';
 
   let cfg = $state<SystemConfig | null>(null);
   let busy = $state(false);
+  let quotaGb = $state('');
+
+  function loaded(c: SystemConfig) {
+    cfg = c;
+    quotaGb = c.user.defaultQuotaBytes ? String(c.user.defaultQuotaBytes / 1024 ** 3) : '';
+  }
 
   $effect(() => {
-    api
-      .getConfig()
-      .then((c) => (cfg = c))
-      .catch(toastError);
+    api.getConfig().then(loaded).catch(toastError);
   });
+
+  /** Cleared number inputs bind to null; drop them so the server keeps the old value. */
+  function withoutNulls(v: unknown): unknown {
+    if (Array.isArray(v) || v === null || typeof v !== 'object') return v;
+    return Object.fromEntries(
+      Object.entries(v)
+        .filter(([, x]) => x !== null && x !== undefined && !(typeof x === 'number' && isNaN(x)))
+        .map(([k, x]) => [k, withoutNulls(x)]),
+    );
+  }
 
   async function save(e: Event) {
     e.preventDefault();
     if (!cfg) return;
     busy = true;
     try {
-      cfg = await api.putConfig($state.snapshot(cfg) as SystemConfig);
+      const patch = withoutNulls($state.snapshot(cfg)) as SystemConfig;
+      const gb = parseFloat(String(quotaGb ?? '').replace(',', '.'));
+      patch.user = { defaultQuotaBytes: gb > 0 ? Math.round(gb * 1024 ** 3) : null };
+      loaded(await api.putConfig(patch));
+      api
+        .serverInfo()
+        .then((i) => (auth.serverInfo = i))
+        .catch(() => {});
       toast(t('saved'), 'success');
     } catch (err) {
       toastError(err);
@@ -32,6 +52,20 @@
   <div class="spinner"></div>
 {:else}
   <form class="cfg" onsubmit={save}>
+    <fieldset class="card">
+      <legend>{t('cfgServer')}</legend>
+      <label class="field"
+        >{t('cfgExternalDomain')}<input type="url" bind:value={cfg.server.externalDomain} placeholder="https://photos.example.com" /></label
+      >
+      <p class="muted small">{t('cfgExternalDomainHint')}</p>
+      <label class="field">{t('cfgLoginMessage')}<textarea rows="2" bind:value={cfg.server.loginPageMessage}></textarea></label>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>{t('cfgUsers')}</legend>
+      <label class="field narrow">{t('cfgDefaultQuota')}<input type="number" min="0" step="any" bind:value={quotaGb} /></label>
+    </fieldset>
+
     <fieldset class="card">
       <legend>{t('cfgMl')}</legend>
       <label class="check"><input type="checkbox" bind:checked={cfg.ml.enabled} /> {t('cfgEnabled')}</label>
@@ -82,6 +116,38 @@
     </fieldset>
 
     <fieldset class="card">
+      <legend>{t('cfgImage')}</legend>
+      <div class="grid-2">
+        <label class="field"
+          >{t('cfgPreviewSize')}<input type="number" min="320" max="4096" step="1" bind:value={cfg.image.previewSize} /></label
+        >
+        <label class="field"
+          >{t('cfgPreviewQuality')}<input type="number" min="30" max="100" step="1" bind:value={cfg.image.previewQuality} /></label
+        >
+        <label class="field"
+          >{t('cfgThumbSize')}<input type="number" min="64" max="1024" step="1" bind:value={cfg.image.thumbnailSize} /></label
+        >
+        <label class="field"
+          >{t('cfgThumbQuality')}<input type="number" min="30" max="100" step="1" bind:value={cfg.image.thumbnailQuality} /></label
+        >
+      </div>
+      <p class="muted small">{t('cfgImageHint')}</p>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>{t('cfgLibrary')}</legend>
+      <label class="check"><input type="checkbox" bind:checked={cfg.library.scanEnabled} /> {t('cfgLibraryScan')}</label>
+      <label class="field narrow">{t('cfgCron')}<input type="text" bind:value={cfg.library.scanCron} placeholder="0 0 * * * *" /></label>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>{t('cfgMap')}</legend>
+      <label class="check"><input type="checkbox" bind:checked={cfg.map.enabled} /> {t('cfgEnabled')}</label>
+      <label class="field">{t('cfgTileUrl')}<input type="text" bind:value={cfg.map.tileUrl} /></label>
+      <label class="field">{t('cfgAttribution')}<input type="text" bind:value={cfg.map.attribution} /></label>
+    </fieldset>
+
+    <fieldset class="card">
       <legend>{t('cfgTrash')} / {t('cfgReverseGeocoding')} / {t('cfgPasswordLogin')}</legend>
       <label class="field narrow">{t('cfgTrashDays')}<input type="number" min="0" bind:value={cfg.trash.days} /></label>
       <label class="check"><input type="checkbox" bind:checked={cfg.reverseGeocoding.enabled} /> {t('cfgReverseGeocoding')}</label>
@@ -102,7 +168,7 @@
         <label class="field">{t('cfgMobileRedirect')}<input type="text" bind:value={cfg.oauth.mobileRedirectUri} /></label>
       </div>
       <label class="check"><input type="checkbox" bind:checked={cfg.oauth.autoRegister} /> {t('cfgAutoRegister')}</label>
-      <p class="muted small">Redirect URI (Web): <code>{location.origin}/auth/oauth-callback</code></p>
+      <p class="muted small">{t('cfgRedirectWeb')}: <code>{location.origin}/auth/oauth-callback</code></p>
     </fieldset>
 
     <div class="actions">

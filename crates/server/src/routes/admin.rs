@@ -39,8 +39,12 @@ async fn info(State(state): State<SharedState>) -> Json<ServerInfo> {
             oauth: sys.oauth.enabled,
             reverse_geocoding: sys.reverse_geocoding.enabled && state.geocoder.is_loaded(),
             cast: true,
+            map: sys.map.enabled,
         },
-        public_url: state.config.public_url.clone(),
+        public_url: state.public_url(),
+        map_tile_url: sys.map.tile_url,
+        map_attribution: sys.map.attribution,
+        trash_days: sys.trash.days,
     })
 }
 
@@ -76,6 +80,16 @@ async fn put_config(State(state): State<SharedState>, _a: AdminAuth, Json(patch)
     let cfg: SystemConfig = serde_json::from_value(value).map_err(|e| AppError::bad(format!("invalid config: {e}")))?;
     if cfg.backup.enabled {
         cfg.backup.cron.parse::<cron::Schedule>().map_err(|e| AppError::bad(format!("invalid cron expression: {e}")))?;
+    }
+    if cfg.library.scan_enabled {
+        cfg.library.scan_cron.parse::<cron::Schedule>().map_err(|e| AppError::bad(format!("invalid cron expression: {e}")))?;
+    }
+    let domain = cfg.server.external_domain.trim();
+    if !domain.is_empty() && !(domain.starts_with("http://") || domain.starts_with("https://")) {
+        return Err(AppError::bad("external domain must start with http:// or https://"));
+    }
+    if cfg.map.enabled && !cfg.map.tile_url.contains("{z}") {
+        return Err(AppError::bad("map tile URL must contain {z}, {x} and {y}"));
     }
     sysconfig::save(&state.db, &cfg).await?;
     *state.sys.write().expect("config lock") = cfg.clone();

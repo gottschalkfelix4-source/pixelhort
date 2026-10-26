@@ -1,5 +1,5 @@
 import { thumbHashToDataURL } from 'thumbhash';
-import { originalUrl, type AssetDto, type ShareAccess } from './api';
+import { api, originalUrl, type AssetDto, type ShareAccess } from './api';
 import { locale } from './i18n';
 
 // ───────────── Formatting ─────────────
@@ -163,9 +163,23 @@ export function triggerDownload(url: string, filename?: string) {
   a.remove();
 }
 
-export async function downloadAssets(assets: AssetDto[], share?: ShareAccess | null) {
+/** Downloads the original; with `includeLiveVideo` also the video part of a Live/Motion Photo. */
+export async function downloadAsset(a: AssetDto, share?: ShareAccess | null, includeLiveVideo = false) {
+  triggerDownload(originalUrl(a.id, share, a.hasEdits), a.originalFileName);
+  if (!includeLiveVideo || !a.livePhotoVideoId) return;
+  await new Promise((r) => setTimeout(r, 400));
+  let name = a.originalFileName.replace(/\.[^.]+$/, '') + '.mov';
+  try {
+    name = (await api.asset(a.livePhotoVideoId, share)).originalFileName;
+  } catch {
+    /* fall back to the derived name */
+  }
+  triggerDownload(originalUrl(a.livePhotoVideoId, share), name);
+}
+
+export async function downloadAssets(assets: AssetDto[], share?: ShareAccess | null, includeLiveVideo = false) {
   for (const a of assets) {
-    triggerDownload(originalUrl(a.id, share, a.hasEdits), a.originalFileName);
+    await downloadAsset(a, share, includeLiveVideo);
     // Browsers throttle multiple downloads; space them out a bit.
     await new Promise((r) => setTimeout(r, 400));
   }

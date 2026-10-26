@@ -276,3 +276,24 @@
 "backup.status.wifi" = "Warte auf WLAN";
 "backup.status.noPermission" = "Kein Zugriff auf Fotos";
 "backup.status.disabled" = "Sicherung ist ausgeschaltet";
+
+/* Settings: account security, devices, features */
+"settings.changePassword" = "Passwort ändern";
+"settings.devices" = "Angemeldete Geräte";
+"settings.features" = "Funktionen";
+"settings.features.footer" = "Gilt für alle deine Geräte und die Web-App.";
+"settings.feature.memories" = "Erinnerungen in der Fotoübersicht";
+"settings.feature.people" = "Personen";
+"settings.feature.sharedLinks" = "Freigabelinks";
+"devices.current" = "Dieses Gerät";
+"devices.lastUsed %@" = "Zuletzt aktiv: %@";
+"devices.signOut" = "Abmelden";
+"devices.signOutOthers" = "Alle anderen abmelden";
+"devices.signOutOthers.confirm" = "Alle anderen Geräte werden abgemeldet.";
+"devices.footer" = "Wische nach links, um ein Gerät abzumelden.";
+"devices.unknown" = "Unbekanntes Gerät";
+"password.current" = "Aktuelles Passwort";
+"password.new" = "Neues Passwort";
+"password.repeat" = "Neues Passwort wiederholen";
+"password.mismatch" = "Die Passwörter stimmen nicht überein.";
+"password.footer" = "Mindestens 8 Zeichen. Danach werden alle anderen Geräte abgemeldet.";

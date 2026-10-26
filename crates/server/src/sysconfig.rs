@@ -14,6 +14,51 @@ pub struct SystemConfig {
     pub reverse_geocoding: Toggle,
     pub password_login: Toggle,
     pub oauth: OAuthConfig,
+    pub server: ServerConfig,
+    pub user: UserDefaults,
+    pub library: LibraryConfig,
+    pub image: ImageConfig,
+    pub map: MapConfig,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct ServerConfig {
+    /// External URL for share links and casting; overrides `PH_PUBLIC_URL` when set.
+    pub external_domain: String,
+    /// Shown on the login page.
+    pub login_page_message: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct UserDefaults {
+    /// Quota for new users (admin-created without an explicit quota, OAuth auto-registration).
+    pub default_quota_bytes: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct LibraryConfig {
+    pub scan_enabled: bool,
+    pub scan_cron: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct ImageConfig {
+    pub preview_size: u32,
+    pub preview_quality: u8,
+    pub thumbnail_size: u32,
+    pub thumbnail_quality: u8,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct MapConfig {
+    pub enabled: bool,
+    pub tile_url: String,
+    pub attribution: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -108,6 +153,28 @@ impl Default for VideoConfig {
     }
 }
 
+impl Default for LibraryConfig {
+    fn default() -> Self {
+        Self { scan_enabled: true, scan_cron: "0 0 * * * *".into() }
+    }
+}
+
+impl Default for ImageConfig {
+    fn default() -> Self {
+        Self { preview_size: 1440, preview_quality: 82, thumbnail_size: 250, thumbnail_quality: 78 }
+    }
+}
+
+impl Default for MapConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            tile_url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png".into(),
+            attribution: "© <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">OpenStreetMap</a>".into(),
+        }
+    }
+}
+
 impl Default for TrashConfig {
     fn default() -> Self {
         Self { days: 30 }
@@ -149,6 +216,11 @@ impl Default for SystemConfig {
             },
             password_login: Toggle::default(),
             oauth: OAuthConfig::default(),
+            server: ServerConfig::default(),
+            user: UserDefaults::default(),
+            library: LibraryConfig::default(),
+            image: ImageConfig::default(),
+            map: MapConfig::default(),
         }
     }
 }
@@ -217,5 +289,16 @@ mod tests {
         assert_eq!(cfg.ml.face_min_faces, 5);
         assert_eq!(cfg.trash.days, 7);
         assert_eq!(cfg.ml.clip_model, "ViT-B-32__openai");
+        assert_eq!(cfg.image.preview_size, 1440);
+    }
+
+    #[test]
+    fn old_config_without_new_sections_loads() {
+        let mut base = serde_json::to_value(SystemConfig::default()).unwrap();
+        merge_json(&mut base, serde_json::json!({"trash": {"days": 3}}));
+        base.as_object_mut().unwrap().remove("map");
+        let cfg: SystemConfig = serde_json::from_value(base).unwrap();
+        assert!(cfg.map.enabled);
+        assert_eq!(cfg.library.scan_cron, "0 0 * * * *");
     }
 }

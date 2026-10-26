@@ -8,7 +8,7 @@
   import ShareLinkDialog from './ShareLinkDialog.svelte';
   import { api, type Uuid, type Visibility } from '../lib/api';
   import type { Selection } from '../lib/selection.svelte';
-  import { auth, bumpAssets, confirmDialog, toast, toastError } from '../lib/state.svelte';
+  import { auth, bumpAssets, confirmDialog, toast, toastError, prefs } from '../lib/state.svelte';
   import { downloadAssets } from '../lib/utils';
   import { t } from '../lib/i18n';
 
@@ -93,7 +93,7 @@
 
   function download() {
     menuOpen = false;
-    downloadAssets(items);
+    downloadAssets(items, null, prefs.value.download.includeLiveVideo);
   }
 </script>
 

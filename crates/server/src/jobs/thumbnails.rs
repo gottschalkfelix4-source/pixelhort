@@ -1,4 +1,4 @@
-//! Generates preview (1440px JPEG), thumbnail (250px JPEG) and thumbhash.
+//! Generates preview and thumbnail JPEGs (sizes/quality from the image settings) and the thumbhash.
 
 use std::path::{Path, PathBuf};
 
@@ -8,9 +8,6 @@ use uuid::Uuid;
 use crate::media::{self, Edits};
 use crate::model::{AssetRow, get_asset};
 use crate::state::SharedState;
-
-pub const PREVIEW_SIZE: u32 = 1440;
-pub const THUMB_SIZE: u32 = 250;
 
 pub fn edits_of(asset: &AssetRow) -> Option<Edits> {
     asset.edits.clone().and_then(|v| serde_json::from_value(v).ok()).filter(|e: &Edits| !e.is_identity())
@@ -44,10 +41,15 @@ pub async fn run(state: &SharedState, asset_id: Uuid) -> anyhow::Result<()> {
     let asset = get_asset(&state.db, asset_id).await?;
     let img = render(state, &asset, true).await?;
     let (full_w, full_h) = img.dimensions();
+    let cfg = state.sys().image;
     let (preview, thumb, hash) = tokio::task::spawn_blocking(move || -> anyhow::Result<_> {
-        let preview = media::fit_longest(&img, PREVIEW_SIZE);
-        let thumb = media::fit_shortest(&preview, THUMB_SIZE);
-        Ok((media::encode_jpeg(&preview, 82)?, media::encode_jpeg(&thumb, 78)?, media::thumbhash(&thumb)))
+        let preview = media::fit_longest(&img, cfg.preview_size.clamp(320, 4096));
+        let thumb = media::fit_shortest(&preview, cfg.thumbnail_size.clamp(64, 1024));
+        Ok((
+            media::encode_jpeg(&preview, cfg.preview_quality.clamp(30, 100))?,
+            media::encode_jpeg(&thumb, cfg.thumbnail_quality.clamp(30, 100))?,
+            media::thumbhash(&thumb),
+        ))
     })
     .await??;
 

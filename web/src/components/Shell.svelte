@@ -2,7 +2,7 @@
   import type { Snippet } from 'svelte';
   import Icon, { type IconName } from './Icon.svelte';
   import { router, navigate } from '../lib/router.svelte';
-  import { auth, logout, setTheme, ui } from '../lib/state.svelte';
+  import { auth, logout, prefs, setTheme, ui } from '../lib/state.svelte';
   import { pickFiles } from '../lib/upload.svelte';
   import { formatBytes } from '../lib/utils';
   import { t, type MessageKey } from '../lib/i18n';
@@ -31,6 +31,15 @@
     { href: '/trash', icon: 'delete', label: 'navTrash', section: 'library' },
   ];
 
+  const hidden = $derived(
+    new Set([
+      ...(prefs.value.people.enabled ? [] : ['/people']),
+      ...(prefs.value.tags.enabled ? [] : ['/tags']),
+      ...(auth.serverInfo?.features.map === false ? ['/map'] : []),
+    ]),
+  );
+  const visibleNav = $derived(nav.filter((n) => !hidden.has(n.href)));
+
   function isActive(href: string) {
     return router.path === href || router.path.startsWith(href + '/');
   }
@@ -53,7 +62,7 @@
 <header class="topbar">
   <button class="icon-btn menu-btn" onclick={() => {
       ui.sidebarOpen = !ui.sidebarOpen;
-    }} aria-label="Menu"><Icon name="menu" /></button>
+    }} aria-label={t('menu')}><Icon name="menu" /></button>
   <a class="logo" href="/photos">
     <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true"
       ><rect width="64" height="64" rx="14" fill="#1a73e8" /><path d="M14 46l12-16 9 11 6-7 9 12z" fill="#fff" /><circle
@@ -104,8 +113,8 @@
 
 <aside class="sidebar" class:open={ui.sidebarOpen}>
   <nav>
-    {#each nav as item, i (item.href)}
-      {#if item.section && !nav[i - 1]?.section}
+    {#each visibleNav as item, i (item.href)}
+      {#if item.section && !visibleNav[i - 1]?.section}
         <div class="section">{t('navLibrary')}</div>
       {/if}
       <a href={item.href} class:active={isActive(item.href)} onclick={() => {
