@@ -10,9 +10,7 @@ struct ServerSetupView: View {
         Form {
             Section {
                 VStack(spacing: 12) {
-                    Image(systemName: "photo.stack.fill")
-                        .font(.system(size: 56))
-                        .foregroundStyle(.tint)
+                    PixelhortLogo(size: 72)
                     Text("onboarding.welcome")
                         .font(.title.bold())
                     Text("onboarding.welcome.subtitle")

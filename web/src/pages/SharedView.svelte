@@ -1,6 +1,7 @@
 <script lang="ts">
   import AssetGrid from '../components/AssetGrid.svelte';
   import Icon from '../components/Icon.svelte';
+  import Logo from '../components/Logo.svelte';
   import { api, ApiError, type AssetDto, type ShareAccess, type SharedLinkDto } from '../lib/api';
   import { auth, setTheme, toast, ui } from '../lib/state.svelte';
   import { addFiles, pickFiles } from '../lib/upload.svelte';
@@ -107,15 +108,7 @@
 >
   <header class="top">
     <a class="logo" href={auth.user ? '/photos' : '/login'}>
-      <svg viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"
-        ><rect width="64" height="64" rx="14" fill="#1a73e8" /><path d="M14 46l12-16 9 11 6-7 9 12z" fill="#fff" /><circle
-          cx="42"
-          cy="20"
-          r="6"
-          fill="#fbbc04"
-        /></svg
-      >
-      <span>{t('appName')}</span>
+      <Logo size={28} wordmark />
     </a>
     <span class="spacer"></span>
     {#if link?.allowUpload}
@@ -217,7 +210,7 @@
     text-align: center;
   }
   @media (max-width: 600px) {
-    .logo span,
+    .logo :global(.wordmark),
     .lbl {
       display: none;
     }

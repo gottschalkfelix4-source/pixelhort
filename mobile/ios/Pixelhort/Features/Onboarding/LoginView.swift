@@ -17,6 +17,13 @@ struct LoginView: View {
     var body: some View {
         Form {
             Section {
+                PixelhortLogo(size: 64, wordmark: true)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+            }
+            .listRowBackground(Color.clear)
+
+            Section {
                 LabeledContent("login.server") {
                     Text(verbatim: session.serverURL?.absoluteString ?? "–")
                         .foregroundStyle(.secondary)

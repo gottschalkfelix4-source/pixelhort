@@ -3,6 +3,7 @@
   import { auth, initAuth, loggedIn } from '../lib/state.svelte';
   import { navigate, router } from '../lib/router.svelte';
   import { t } from '../lib/i18n';
+  import Logo from '../components/Logo.svelte';
 
   let email = $state('');
   let password = $state('');
@@ -52,14 +53,7 @@
 <div class="wrap">
   <div class="card login">
     <div class="brand">
-      <svg viewBox="0 0 64 64" width="48" height="48" aria-hidden="true"
-        ><rect width="64" height="64" rx="14" fill="#1a73e8" /><path d="M14 46l12-16 9 11 6-7 9 12z" fill="#fff" /><circle
-          cx="42"
-          cy="20"
-          r="6"
-          fill="#fbbc04"
-        /></svg
-      >
+      <Logo size={64} />
       <h1>{setup ? t('setupTitle') : t('appName')}</h1>
       {#if setup}<p class="muted">{t('setupText')}</p>{:else}<p class="muted">{t('loginTitle')}</p>{/if}
     </div>

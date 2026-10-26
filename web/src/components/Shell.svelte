@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import Icon, { type IconName } from './Icon.svelte';
+  import Logo from './Logo.svelte';
   import { router, navigate } from '../lib/router.svelte';
   import { auth, logout, prefs, setTheme, ui } from '../lib/state.svelte';
   import { pickFiles } from '../lib/upload.svelte';
@@ -64,15 +65,7 @@
       ui.sidebarOpen = !ui.sidebarOpen;
     }} aria-label={t('menu')}><Icon name="menu" /></button>
   <a class="logo" href="/photos">
-    <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true"
-      ><rect width="64" height="64" rx="14" fill="#1a73e8" /><path d="M14 46l12-16 9 11 6-7 9 12z" fill="#fff" /><circle
-        cx="42"
-        cy="20"
-        r="6"
-        fill="#fbbc04"
-      /></svg
-    >
-    <span>{t('appName')}</span>
+    <Logo size={30} wordmark />
   </a>
   <form class="search" onsubmit={submitSearch} role="search">
     <Icon name="search" />
@@ -350,7 +343,7 @@
     }
   }
   @media (max-width: 700px) {
-    .logo span,
+    .logo :global(.wordmark),
     .lbl {
       display: none;
     }
