@@ -16,7 +16,7 @@ final class BackupFlowUITests: XCTestCase {
 
     func test1_LoginBackupAndTimeline() throws {
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments += ["-uiTesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         addUIInterruptionMonitor(withDescription: "System alerts") { alert in
             for label in ["Allow Full Access", "Allow Access to All Photos", "Allow", "OK", "Continue"] {
                 let button = alert.buttons[label]
@@ -116,11 +116,6 @@ final class BackupFlowUITests: XCTestCase {
                 }
             }
         }
-        // The sheet is a remote view without accessible buttons: tap "Not Now" by position.
-        // Without the sheet this hits the empty "No photos yet" area of the timeline.
-        sleep(2)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.32, dy: 0.626)).tap()
-        sleep(1)
     }
 
     /// iOS 18 shows the photo permission as a full-screen sheet owned by SpringBoard,

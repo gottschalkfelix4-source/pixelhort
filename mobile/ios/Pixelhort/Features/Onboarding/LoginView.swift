@@ -11,6 +11,9 @@ struct LoginView: View {
 
     private var status: AuthStatus? { session.authStatus }
 
+    /// UI tests disable password autofill so iOS does not show its "Save Password?" sheet.
+    private static let autofill = !ProcessInfo.processInfo.arguments.contains("-uiTesting")
+
     var body: some View {
         Form {
             Section {
@@ -33,12 +36,12 @@ struct LoginView: View {
                 Section("login.title") {
                     TextField("login.email", text: $email)
                         .keyboardType(.emailAddress)
-                        .textContentType(.username)
+                        .textContentType(Self.autofill ? .username : nil)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("login.email")
                     SecureField("login.password", text: $password)
-                        .textContentType(.password)
+                        .textContentType(Self.autofill ? .password : nil)
                         .submitLabel(.go)
                         .onSubmit { Task { await login() } }
                         .accessibilityIdentifier("login.password")
