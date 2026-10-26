@@ -46,7 +46,6 @@ final class BackupFlowUITests: XCTestCase {
         passwordField.typeText(password)
         app.buttons["login.submit"].tap()
 
-        dismissSavePassword(app)
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 30), "main tabs missing after login")
         dismissSavePassword(app)
@@ -117,6 +116,11 @@ final class BackupFlowUITests: XCTestCase {
                 }
             }
         }
+        // The sheet is a remote view without accessible buttons: tap "Not Now" by position.
+        // Without the sheet this hits the empty "No photos yet" area of the timeline.
+        sleep(2)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.32, dy: 0.626)).tap()
+        sleep(1)
     }
 
     /// iOS 18 shows the photo permission as a full-screen sheet owned by SpringBoard,
