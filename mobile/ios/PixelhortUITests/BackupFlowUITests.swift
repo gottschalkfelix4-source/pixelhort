@@ -80,6 +80,9 @@ final class BackupFlowUITests: XCTestCase {
             total = (try? self.assetCount(token: token)) ?? 0
             return total >= self.minAssets
         }, "server received only \(total) assets")
+        // Let the run finish so the whole library is on the server for the next test.
+        let done = app.staticTexts.matching(NSPredicate(format: "label == %@", "Everything is backed up")).firstMatch
+        XCTAssertTrue(done.waitForExistence(timeout: 240), "backup did not finish")
         attach(app, "backup-done")
 
         // And the timeline shows them.
