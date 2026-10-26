@@ -186,6 +186,15 @@ final class FeatureTourUITests: XCTestCase {
         let others = ids.filter { $0 != favorite && $0 != named("ios-2.jpg") }
 
         _ = try call("PUT", "/api/assets/\(favorite)", body: ["isFavorite": true])
+
+        // "On this day": move one timeline photo to today's date three years ago, so the memories
+        // carousel has content whatever day the test runs (the app asks for the local date).
+        let memory = named("ios-2.jpg") ?? favorite
+        let threeYearsAgo = Calendar.current.date(byAdding: .year, value: -3, to: Date())!
+        let day = DateFormatter()
+        day.locale = Locale(identifier: "en_US_POSIX")
+        day.dateFormat = "yyyy-MM-dd"
+        _ = try call("PUT", "/api/assets/\(memory)", body: ["dateTimeOriginal": day.string(from: threeYearsAgo) + "T12:00:00Z"])
         _ = try call("PUT", "/api/assets", body: ["ids": [others[0]], "visibility": "archive"])
         _ = try call("DELETE", "/api/assets", body: ["ids": [others[1]]])
         _ = try call("POST", "/api/albums", body: ["albumName": "Urlaub", "assetIds": [favorite, others[2]]])

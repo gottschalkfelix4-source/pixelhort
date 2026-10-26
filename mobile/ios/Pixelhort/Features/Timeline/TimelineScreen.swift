@@ -66,8 +66,12 @@ struct MemoriesCarousel: View {
     @State private var viewer: ViewerRequest?
 
     var body: some View {
+        // A placeholder keeps the view alive while empty: an empty Group never appears inside the
+        // timeline's LazyVStack, so its `.task` would never load the memories.
         Group {
-            if !memories.isEmpty {
+            if memories.isEmpty {
+                Color.clear.frame(height: 0)
+            } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {
                         ForEach(memories) { memory in
