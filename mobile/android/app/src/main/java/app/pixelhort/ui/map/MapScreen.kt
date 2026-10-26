@@ -1,7 +1,10 @@
 package app.pixelhort.ui.map
 
 import android.graphics.Color as AColor
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -43,10 +46,8 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.simplefastpoint.LabelledGeoPoint
-import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlay
-import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlayOptions
-import org.osmdroid.views.overlay.simplefastpoint.SimplePointTheme
+import org.osmdroid.views.overlay.FolderOverlay
+import org.osmdroid.views.overlay.Marker
 
 /** OpenStreetMap (osmdroid) with one point per geotagged asset from `/api/map/markers`. */
 @Composable
@@ -119,28 +120,44 @@ private fun OsmMap(markers: List<MapMarkerDto>, onClick: (String) -> Unit) {
         factory = { mapView },
         modifier = Modifier.fillMaxSize(),
         update = { map ->
-            map.overlays.removeAll { it is SimpleFastPointOverlay }
+            map.overlays.removeAll { it is FolderOverlay }
             if (markers.isNotEmpty()) {
-                val points = markers.map { LabelledGeoPoint(it.lat, it.lon, it.id) }
-                val paint = Paint().apply { style = Paint.Style.FILL; color = AColor.parseColor("#3F6CF0"); isAntiAlias = true }
-                val options = SimpleFastPointOverlayOptions.getDefaultStyle()
-                    .setAlgorithm(SimpleFastPointOverlayOptions.RenderingAlgorithm.MAXIMUM_OPTIMIZATION)
-                    .setRadius(10f)
-                    .setIsClickable(true)
-                    .setCellSize(14)
-                    .setPointStyle(paint)
-                val overlay = SimpleFastPointOverlay(SimplePointTheme(ArrayList<org.osmdroid.api.IGeoPoint>(points), true), options)
-                overlay.setOnClickListener { pts, index -> (pts.get(index) as? LabelledGeoPoint)?.label?.let(onClick) }
-                map.overlays.add(overlay)
+                val icon = dotIcon(ctx)
+                val folder = FolderOverlay()
+                // Plain markers render reliably; cap the count to keep the map responsive.
+                markers.take(MAX_MARKERS).forEach { m ->
+                    folder.add(Marker(map).apply {
+                        position = GeoPoint(m.lat, m.lon)
+                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                        this.icon = icon
+                        title = listOfNotNull(m.city, m.country).joinToString(", ")
+                        setOnMarkerClickListener { _, _ -> onClick(m.id); true }
+                    })
+                }
+                map.overlays.add(folder)
+                val points = markers.map { GeoPoint(it.lat, it.lon) }
                 if (markers.size > 1) {
-                    val box = BoundingBox.fromGeoPointsSafe(points.map { GeoPoint(it.latitude, it.longitude) })
+                    val box = BoundingBox.fromGeoPointsSafe(points)
                     map.post { runCatching { map.zoomToBoundingBox(box.increaseByScale(1.2f), false, 64) } }
                 } else {
                     map.controller.setZoom(12.0)
-                    map.controller.setCenter(GeoPoint(markers[0].lat, markers[0].lon))
+                    map.controller.setCenter(points[0])
                 }
             }
             map.invalidate()
         },
     )
+}
+
+private const val MAX_MARKERS = 3000
+
+/** Blue dot with a white ring as marker icon. */
+private fun dotIcon(ctx: android.content.Context): BitmapDrawable {
+    val size = (22 * ctx.resources.displayMetrics.density).toInt()
+    val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val r = size / 2f
+    canvas.drawCircle(r, r, r, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = AColor.WHITE })
+    canvas.drawCircle(r, r, r * 0.72f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = AColor.parseColor("#3F6CF0") })
+    return BitmapDrawable(ctx.resources, bmp)
 }

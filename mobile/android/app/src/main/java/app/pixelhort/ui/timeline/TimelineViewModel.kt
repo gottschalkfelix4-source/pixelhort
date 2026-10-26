@@ -11,6 +11,7 @@ import app.pixelhort.data.api.AssetBulkUpdateRequest
 import app.pixelhort.data.api.AssetDeleteRequest
 import app.pixelhort.data.api.AssetDto
 import app.pixelhort.data.api.MemoryDto
+import app.pixelhort.data.api.PinRequest
 import app.pixelhort.data.api.RestoreRequest
 import app.pixelhort.data.api.TimeBucketDto
 import app.pixelhort.data.api.userMessage
@@ -155,6 +156,16 @@ class TimelineViewModel(private val c: AppContainer, val filter: TimelineFilter,
 
     suspend fun setVisibility(ids: List<String>, visibility: String) =
         c.apiClient.api.updateAssets(AssetBulkUpdateRequest(ids = ids, visibility = visibility))
+
+    /** Unlocks the session with the PIN, moves the assets and locks again. */
+    suspend fun moveToLocked(ids: List<String>, pin: String) {
+        c.apiClient.api.unlockSession(PinRequest(pin))
+        try {
+            setVisibility(ids, "locked")
+        } finally {
+            runCatching { c.apiClient.api.lockSession() }
+        }
+    }
 
     suspend fun delete(ids: List<String>, force: Boolean) =
         c.apiClient.api.deleteAssets(AssetDeleteRequest(ids, force))

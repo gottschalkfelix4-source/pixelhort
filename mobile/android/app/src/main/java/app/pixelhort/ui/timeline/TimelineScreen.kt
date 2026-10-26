@@ -83,6 +83,7 @@ import app.pixelhort.ui.components.EmptyBox
 import app.pixelhort.ui.components.ErrorBox
 import app.pixelhort.ui.components.Format
 import app.pixelhort.ui.components.LoadingBox
+import app.pixelhort.ui.components.TextInputDialog
 import app.pixelhort.ui.components.toast
 import app.pixelhort.ui.nav.LocalNav
 import app.pixelhort.ui.nav.openViewer
@@ -90,7 +91,7 @@ import coil3.compose.AsyncImage
 import kotlin.math.ceil
 import kotlin.math.max
 
-private enum class PendingDialog { ALBUM, LINK, DELETE, DELETE_FOREVER, EMPTY_TRASH }
+private enum class PendingDialog { ALBUM, LINK, DELETE, DELETE_FOREVER, EMPTY_TRASH, LOCK }
 
 /**
  * Generic month/day grouped asset grid backed by the timeline endpoints. Used for the main
@@ -194,6 +195,16 @@ fun TimelineScreen(
             onConfirm = { vm.runAction(onError) { vm.emptyTrash() } },
             onDismiss = { dialog = null },
         )
+        // Moving into the locked folder needs an unlocked session: ask for the PIN first.
+        PendingDialog.LOCK -> TextInputDialog(
+            title = stringResource(R.string.enter_pin),
+            label = stringResource(R.string.pin_hint),
+            confirm = stringResource(R.string.move_to_locked),
+            keyboardNumber = true,
+            password = true,
+            onConfirm = { pin -> val ids = dialogIds; dialog = null; vm.runAction(onError) { vm.moveToLocked(ids, pin) } },
+            onDismiss = { dialog = null },
+        )
         null -> Unit
     }
 }
@@ -265,7 +276,7 @@ private fun SelectionTopBar(
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.move_to_locked)) },
                             leadingIcon = { Icon(Icons.Outlined.Lock, null) },
-                            onClick = { menu = false; vm.runAction(onError) { vm.setVisibility(own, "locked") } },
+                            onClick = { menu = false; onDialog(PendingDialog.LOCK, own) },
                         )
                     }
                 }

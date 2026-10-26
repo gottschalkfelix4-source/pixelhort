@@ -87,7 +87,7 @@ jobs:
           cargo build -p pixelhort-server
           mkdir -p "$RUNNER_TEMP/phdata"
           PH_DATABASE_URL="postgres://$USER@localhost:5432/pixelhort" PH_DATA_DIR="$RUNNER_TEMP/phdata" \
-            PH_REVERSE_GEOCODING=false PH_METRICS_LISTEN=off \
+            PH_REVERSE_GEOCODING=false PH_METRICS_LISTEN=off PH_LOG="info,tower_http=debug" \
             nohup target/debug/pixelhort-server > "$RUNNER_TEMP/server.log" 2>&1 &
           for i in $(seq 1 90); do curl -fs localhost:2342/api/server/ping && break; sleep 2; done
           TOKEN=$(curl -fs -X POST localhost:2342/api/auth/setup -H 'content-type: application/json' \
@@ -115,6 +115,21 @@ jobs:
           xcodegen generate
           xcodebuild test -project Pixelhort.xcodeproj -scheme Pixelhort -destination "id=$UDID" \
             -resultBundlePath "$RUNNER_TEMP/ui-tests.xcresult" CODE_SIGNING_ALLOWED=NO -quiet
+      - name: Test report and screenshots
+        if: always()
+        run: |
+          xcrun xcresulttool get test-results summary --path "$RUNNER_TEMP/ui-tests.xcresult" || true
+          xcrun xcresulttool get test-results tests --path "$RUNNER_TEMP/ui-tests.xcresult" | python3 -c '
+          import json,sys
+          def walk(n):
+              for d in n.get("children", []):
+                  if d.get("nodeType") == "Failure Message": print("FAILURE:", d.get("name"))
+                  walk(d)
+          for n in json.load(sys.stdin).get("testNodes", []): walk(n)' || true
+          mkdir -p "$RUNNER_TEMP/screenshots"
+          xcrun xcresulttool export attachments --path "$RUNNER_TEMP/ui-tests.xcresult" --output-path "$RUNNER_TEMP/screenshots" || true
+          ls "$RUNNER_TEMP/screenshots" || true
+          grep -E "started processing request|finished processing request" "$RUNNER_TEMP/server.log" | sed 's/\x1b\[[0-9;]*m//g' | tail -40 || true
       - name: Verify uploads on the server
         run: |
           T=$(curl -fs -X POST localhost:2342/api/auth/login -H 'content-type: application/json' \
@@ -131,4 +146,5 @@ jobs:
           name: ios-e2e-results
           path: |
             ${{ runner.temp }}/ui-tests.xcresult
+            ${{ runner.temp }}/screenshots
             ${{ runner.temp }}/server.log
