@@ -1,0 +1,278 @@
+/* Pixelhort – Deutsch (Entwicklungssprache) */
+
+/* Tabs */
+"tab.photos" = "Fotos";
+"tab.search" = "Suchen";
+"tab.albums" = "Alben";
+"tab.library" = "Bibliothek";
+"tab.settings" = "Einstellungen";
+
+/* Allgemein */
+"common.cancel" = "Abbrechen";
+"common.create" = "Erstellen";
+"common.delete" = "Löschen";
+"common.done" = "Fertig";
+"common.error" = "Fehler";
+"common.off" = "Aus";
+"common.ok" = "OK";
+"common.on" = "Ein";
+"common.retry" = "Erneut versuchen";
+"common.save" = "Sichern";
+"common.select" = "Auswählen";
+"common.showAll" = "Alle anzeigen";
+
+/* Fehler */
+"error.invalidServerURL" = "Die Serveradresse ist ungültig.";
+"error.notLoggedIn" = "Du bist nicht angemeldet.";
+"error.unauthorized" = "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.";
+"error.locked" = "Der gesperrte Ordner ist nicht entsperrt.";
+"error.http" = "Serverfehler (HTTP %d).";
+"error.decoding" = "Die Antwort des Servers konnte nicht gelesen werden.";
+"error.transport" = "Der Server ist nicht erreichbar.";
+"error.invalidResponse" = "Ungültige Antwort vom Server.";
+"error.noResource" = "Für dieses Objekt wurde keine Originaldatei gefunden.";
+"error.cancelled" = "Abgebrochen.";
+"error.photoLibraryDenied" = "Kein Zugriff auf die Fotomediathek. Bitte erlaube den Zugriff in den Einstellungen.";
+
+/* Onboarding */
+"onboarding.welcome" = "Willkommen bei Pixelhort";
+"onboarding.welcome.subtitle" = "Deine Fotos auf deinem eigenen Server.";
+"onboarding.server.title" = "Serveradresse";
+"onboarding.server.placeholder" = "http://192.168.1.10:2342";
+"onboarding.server.footer" = "Gib die Adresse deines Pixelhort-Servers ein, z. B. http://192.168.1.10:2342 oder https://fotos.example.de.";
+"onboarding.server.connect" = "Verbinden";
+"onboarding.server.notPixelhort" = "Unter dieser Adresse antwortet kein Pixelhort-Server.";
+
+/* Login */
+"login.navigationTitle" = "Anmelden";
+"login.server" = "Server";
+"login.title" = "Mit E-Mail anmelden";
+"login.email" = "E-Mail";
+"login.password" = "Passwort";
+"login.submit" = "Anmelden";
+"login.oauth" = "Mit SSO anmelden";
+"login.changeServer" = "Server wechseln";
+"login.setupRequired" = "Auf diesem Server existiert noch kein Konto. Bitte richte zuerst im Web das Administratorkonto ein.";
+
+/* Zeitachse */
+"timeline.empty" = "Noch keine Fotos";
+"selection.count %lld" = "%lld ausgewählt";
+"memories.yearsAgo %lld" = "Vor %lld Jahren";
+
+/* Aktionen */
+"action.share" = "Teilen";
+"action.favorite" = "Favorit";
+"action.unfavorite" = "Kein Favorit";
+"action.addToAlbum" = "Zu Album hinzufügen";
+"action.sharedLink" = "Link teilen";
+"action.archive" = "Archivieren";
+"action.unarchive" = "Aus Archiv holen";
+"action.moveToLocked" = "In gesperrten Ordner";
+"action.removeFromLocked" = "Aus gesperrtem Ordner";
+"action.delete" = "Löschen";
+"action.deletePermanently" = "Endgültig löschen";
+"action.restore" = "Wiederherstellen";
+"action.removeFromAlbum" = "Aus Album entfernen";
+"action.confirm.title" = "Bist du sicher?";
+"action.confirm.message %lld" = "Betrifft %lld Objekte.";
+
+/* Toasts */
+"toast.addedToAlbum" = "Zum Album hinzugefügt";
+"toast.done" = "Erledigt";
+"toast.saved" = "Auf dem Gerät gesichert";
+
+/* Viewer */
+"viewer.live" = "LIVE";
+"viewer.info" = "Informationen";
+"viewer.saveToDevice" = "Auf Gerät sichern";
+"viewer.cast" = "Auf Fernseher streamen";
+"viewer.delete.title" = "Dieses Objekt löschen?";
+
+/* Info */
+"info.title" = "Informationen";
+"info.section.details" = "Details";
+"info.section.camera" = "Kamera";
+"info.section.people" = "Personen";
+"info.section.tags" = "Tags";
+"info.section.location" = "Ort";
+"info.date" = "Aufnahmedatum";
+"info.fileName" = "Dateiname";
+"info.fileSize" = "Größe";
+"info.dimensions" = "Auflösung";
+"info.duration" = "Dauer";
+"info.type" = "Typ";
+"info.camera" = "Kamera";
+"info.lens" = "Objektiv";
+"info.exposure" = "Belichtung";
+
+/* Cast */
+"cast.title" = "Streamen";
+"cast.video.hint" = "Tippe oben links auf das AirPlay-Symbol und wähle ein Apple TV oder einen AirPlay-Fernseher. Das Video wird direkt vom Server geladen.";
+"cast.photo.hint" = "Fotos lassen sich per AirPlay-Bildschirmsynchronisierung zeigen oder über den Link auf einem anderen Gerät (z. B. im Browser des Fernsehers) öffnen.";
+"cast.shareLink" = "Streaming-Link teilen";
+"cast.copyLink" = "Link kopieren";
+"cast.validity" = "Der Streaming-Link ist 4 Stunden gültig.";
+"cast.googleCast.hint" = "Google Cast (Chromecast) wird über das optionale Google Cast SDK unterstützt – siehe README.";
+
+/* Alben */
+"albums.mine" = "Meine Alben";
+"albums.shared" = "Geteilt";
+"albums.scope" = "Ansicht";
+"albums.empty" = "Noch keine Alben";
+"albums.shared.empty" = "Keine geteilten Alben";
+"albums.create" = "Neues Album";
+"albums.count %lld" = "%lld Objekte";
+"album.name" = "Name";
+"album.description" = "Beschreibung";
+"album.create.withAssets %lld" = "%lld ausgewählte Objekte werden hinzugefügt.";
+"album.rename" = "Album umbenennen";
+"album.share" = "Album teilen";
+"album.share.footer" = "Betrachter können das Album ansehen, Bearbeiter können zusätzlich Fotos hinzufügen.";
+"album.delete" = "Album löschen";
+"album.delete.confirm" = "Album löschen? Die Fotos selbst bleiben erhalten.";
+"album.leave" = "Album verlassen";
+"album.owner %@" = "von %@";
+"album.role.none" = "Kein Zugriff";
+"album.role.viewer" = "Betrachter";
+"album.role.editor" = "Bearbeiter";
+
+/* Bibliothek */
+"library.favorites" = "Favoriten";
+"library.archive" = "Archiv";
+"library.locked" = "Gesperrter Ordner";
+"library.trash" = "Papierkorb";
+"library.people" = "Personen";
+"library.map" = "Karte";
+"library.sharedLinks" = "Geteilte Links";
+"library.partners" = "Partner";
+"library.section.explore" = "Entdecken";
+"library.section.sharing" = "Teilen";
+
+/* Papierkorb */
+"trash.hint" = "Objekte im Papierkorb werden nach Ablauf der Aufbewahrungsfrist endgültig gelöscht.";
+"trash.restoreAll" = "Alle wiederherstellen";
+"trash.empty" = "Papierkorb leeren";
+"trash.empty.confirm" = "Alle Objekte im Papierkorb endgültig löschen?";
+
+/* Suche & Entdecken */
+"search.prompt" = "Suche nach Inhalten, z. B. „Hund am Strand“";
+"explore.people" = "Personen";
+"explore.places" = "Orte";
+"explore.things" = "Dinge";
+"explore.map" = "Karte";
+
+/* Personen */
+"people.empty" = "Noch keine Personen erkannt";
+"people.count %lld" = "%lld Fotos";
+"people.showHidden" = "Ausgeblendete anzeigen";
+"people.addName" = "Namen hinzufügen";
+"people.rename" = "Umbenennen";
+"people.name" = "Name";
+"people.hide" = "Ausblenden";
+"people.unhide" = "Einblenden";
+
+/* Geteilte Links */
+"sharedLinks.empty" = "Keine geteilten Links";
+"sharedLinks.assets %lld" = "%lld Objekte";
+"sharedLinks.expired" = "Abgelaufen";
+"sharedLinks.expires %@" = "Gültig bis %@";
+"sharedLinks.created" = "Link erstellt";
+"sharedLinks.description" = "Beschreibung";
+"sharedLinks.password" = "Passwort (optional)";
+"sharedLinks.expiry" = "Ablauf";
+"sharedLinks.expiry.never" = "Nie";
+"sharedLinks.expiry.day" = "1 Tag";
+"sharedLinks.expiry.week" = "7 Tage";
+"sharedLinks.expiry.month" = "30 Tage";
+"sharedLinks.allowDownload" = "Herunterladen erlauben";
+"sharedLinks.allowUpload" = "Hochladen erlauben";
+"sharedLinks.showMetadata" = "Metadaten anzeigen";
+
+/* Partner */
+"partners.sharedBy" = "Ich teile mit";
+"partners.sharedBy.footer" = "Partner sehen deine Fotos (ohne Archiv und gesperrten Ordner), können sie aber nicht ändern.";
+"partners.sharedWith" = "Mit mir geteilt";
+"partners.sharedWith.empty" = "Niemand teilt seine Bibliothek mit dir.";
+"partners.sharedWith.footer" = "Aktiviere einen Partner, um seine Fotos in deiner Zeitachse zu zeigen.";
+"partners.add" = "Partner hinzufügen";
+"partners.stop" = "Nicht mehr teilen";
+"partners.showInTimeline" = "Partnerfotos in Zeitachse";
+
+/* Gesperrter Ordner */
+"locked.hint" = "Diese Fotos erscheinen nirgendwo sonst. Der Ordner sperrt sich automatisch.";
+"locked.lockNow" = "Jetzt sperren";
+"locked.enterPin" = "PIN eingeben";
+"locked.pin" = "PIN";
+"locked.unlock" = "Entsperren";
+"locked.useBiometrics %@" = "Mit %@ entsperren";
+"locked.unlockWith %@" = "Mit %@ entsperren";
+"locked.biometrics.footer" = "Die PIN wird nach dem ersten Entsperren sicher im Schlüsselbund gespeichert und per Face ID freigegeben.";
+"locked.biometrics.reason" = "Gesperrten Ordner öffnen";
+"locked.setup.title" = "PIN festlegen";
+"locked.setup.footer" = "Die PIN (4–8 Ziffern) schützt den gesperrten Ordner auf allen Geräten.";
+"locked.newPin" = "Neue PIN";
+"locked.confirmPin" = "PIN bestätigen";
+"locked.setup.save" = "PIN speichern";
+
+/* Biometrie */
+"biometric.generic" = "Biometrie";
+
+/* Einstellungen */
+"settings.account" = "Konto";
+"settings.name" = "Name";
+"settings.email" = "E-Mail";
+"settings.editName" = "Namen ändern";
+"settings.storage.quota %@ %@" = "%1$@ von %2$@ belegt";
+"settings.storage.used %@" = "%@ belegt";
+"settings.backup" = "Sicherung";
+"settings.backup.options" = "Sicherungsoptionen";
+"settings.display" = "Darstellung";
+"settings.columns" = "Spalten im Raster";
+"settings.server" = "Server";
+"settings.serverURL" = "Adresse";
+"settings.serverVersion" = "Serverversion";
+"settings.appVersion" = "App-Version";
+"settings.deviceId" = "Geräte-ID";
+"settings.cache" = "Zwischenspeicher";
+"settings.cache.size" = "Bilder-Cache";
+"settings.cache.clear" = "Cache leeren";
+"settings.logout" = "Abmelden";
+"settings.logout.confirm" = "Wirklich abmelden? Die laufende Sicherung wird beendet.";
+
+/* Sicherung */
+"backup.title" = "Sicherung";
+"backup.enabled" = "Automatische Sicherung";
+"backup.enabled.footer" = "Neue Fotos und Videos werden automatisch auf deinen Pixelhort-Server hochgeladen.";
+"backup.permission.denied" = "Pixelhort hat keinen Zugriff auf deine Fotos.";
+"backup.permission.openSettings" = "Einstellungen öffnen";
+"backup.permission.limited" = "Eingeschränkter Zugriff: Nur ausgewählte Fotos werden gesichert.";
+"backup.source" = "Quelle";
+"backup.allPhotos" = "Alle Fotos sichern";
+"backup.albums" = "Alben auswählen";
+"backup.albums.count %lld" = "%lld ausgewählt";
+"backup.albums.smart" = "Intelligente Alben";
+"backup.albums.user" = "Meine Alben";
+"backup.options" = "Optionen";
+"backup.wifiOnly" = "Nur über WLAN";
+"backup.includeVideos" = "Videos einbeziehen";
+"backup.background" = "Im Hintergrund sichern";
+"backup.background.footer" = "iOS entscheidet, wann Hintergrundsicherungen laufen. Laufende Uploads werden auch fortgesetzt, wenn die App geschlossen ist.";
+"backup.reset" = "Sicherungsstatus zurücksetzen";
+"backup.reset.footer" = "Alle Fotos werden erneut geprüft. Bereits vorhandene Dateien werden anhand der Prüfsumme erkannt und nicht doppelt hochgeladen.";
+"backup.reset.confirm" = "Sicherungsstatus zurücksetzen?";
+"backup.startNow" = "Jetzt sichern";
+"backup.stop" = "Anhalten";
+"backup.progress.count %lld %lld" = "%1$lld von %2$lld";
+"backup.progress.current" = "Aktuelle Datei";
+"backup.progress.remaining" = "Verbleibend";
+"backup.progress.failed" = "Fehlgeschlagen";
+"backup.progress.lastRun" = "Letzter Durchlauf";
+"backup.progress.recent" = "Zuletzt gesichert";
+"backup.progress.errors" = "Fehler";
+"backup.status.done" = "Alles gesichert";
+"backup.status.idle" = "Bereit";
+"backup.status.scanning" = "Suche nach neuen Fotos …";
+"backup.status.uploading" = "Wird hochgeladen …";
+"backup.status.wifi" = "Warte auf WLAN";
+"backup.status.noPermission" = "Kein Zugriff auf Fotos";
+"backup.status.disabled" = "Sicherung ist ausgeschaltet";

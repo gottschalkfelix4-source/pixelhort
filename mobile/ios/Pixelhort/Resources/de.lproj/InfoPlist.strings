@@ -1,0 +1,5 @@
+/* Lokalisierte Info.plist-Texte */
+"NSPhotoLibraryUsageDescription" = "Pixelhort sichert deine Fotos und Videos auf deinem eigenen Server.";
+"NSPhotoLibraryAddUsageDescription" = "Pixelhort speichert Fotos und Videos von deinem Server in deiner Mediathek.";
+"NSFaceIDUsageDescription" = "Face ID entsperrt den gesperrten Ordner.";
+"NSLocalNetworkUsageDescription" = "Pixelhort verbindet sich mit deinem Server im lokalen Netzwerk.";

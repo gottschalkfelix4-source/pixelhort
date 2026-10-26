@@ -1,0 +1,36 @@
+[package]
+name = "pixelhort-ml"
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-or-later"
+description = "Pixelhort machine-learning microservice (CLIP, faces, OCR, objects)"
+publish = false
+
+# Standalone project, excluded from the root workspace.
+[workspace]
+
+[features]
+default = []
+# Use the CUDA execution provider (downloads the CUDA build of ONNX Runtime).
+cuda = ["ort/cuda"]
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.8", features = ["multipart"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "fs", "io-util", "signal", "sync", "time"] }
+ort = { version = "=2.0.0-rc.10", features = ["download-binaries", "ndarray"] }
+ndarray = "0.16"
+tokenizers = { version = "0.22", default-features = false, features = ["onig"] }
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "http2"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+metrics = "0.24"
+metrics-exporter-prometheus = { version = "0.17", default-features = false }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 4

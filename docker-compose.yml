@@ -1,0 +1,72 @@
+# Pixelhort – self-hosted photo & video backup
+#
+#   cp .env.example .env   # adjust passwords / paths
+#   docker compose up -d
+#
+# Web app: http://<host>:2342   Prometheus metrics: http://<host>:9464/metrics
+# To run machine learning on another computer, start only the `ml` service there
+# (docker compose up -d ml) and set PH_ML_URL=http://<that-host>:3003 here.
+
+name: pixelhort
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: docker/server.Dockerfile
+    image: pixelhort-server:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PH_PORT:-2342}:2342"
+      - "${PH_METRICS_PORT:-9464}:9464"
+    environment:
+      PH_DATABASE_URL: postgres://${DB_USER:-pixelhort}:${DB_PASSWORD:-pixelhort}@db:5432/${DB_NAME:-pixelhort}
+      PH_ML_URL: ${PH_ML_URL:-http://ml:3003}
+      PH_ML_API_KEY: ${PH_ML_API_KEY:-}
+      PH_PUBLIC_URL: ${PH_PUBLIC_URL:-}
+      PH_OAUTH_ISSUER_URL: ${PH_OAUTH_ISSUER_URL:-}
+      PH_OAUTH_CLIENT_ID: ${PH_OAUTH_CLIENT_ID:-}
+      PH_OAUTH_CLIENT_SECRET: ${PH_OAUTH_CLIENT_SECRET:-}
+      PH_BACKUP_CRON: ${PH_BACKUP_CRON:-0 0 2 * * *}
+      PH_BACKUP_KEEP: ${PH_BACKUP_KEEP:-14}
+    volumes:
+      - ${PH_DATA_PATH:-./data/library}:/data
+      # External libraries (read-only), e.g.:
+      # - /mnt/photos:/mnt/photos:ro
+
+  ml:
+    build:
+      context: .
+      dockerfile: docker/ml.Dockerfile
+    image: pixelhort-ml:latest
+    restart: unless-stopped
+    environment:
+      PH_ML_API_KEY: ${PH_ML_API_KEY:-}
+    volumes:
+      - ml-cache:/cache
+    # GPU: build with --build-arg FEATURES=cuda and uncomment
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices: [{ driver: nvidia, count: 1, capabilities: [gpu] }]
+
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-pixelhort}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-pixelhort}
+      POSTGRES_DB: ${DB_NAME:-pixelhort}
+    volumes:
+      - ${PH_DB_PATH:-./data/postgres}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ml-cache:

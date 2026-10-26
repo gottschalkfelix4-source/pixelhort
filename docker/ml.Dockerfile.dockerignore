@@ -1,0 +1,5 @@
+# Build context filter for docker/ml.Dockerfile (BuildKit picks this up automatically).
+*
+!crates/ml/Cargo.toml
+!crates/ml/Cargo.lock
+!crates/ml/src

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pixelhort is German-first: these default resources are German. -->
+<resources>
+    <string name="app_name">Pixelhort</string>
+
+    <!-- general -->
+    <string name="ok">OK</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="back">Zurück</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="save">Speichern</string>
+    <string name="create">Erstellen</string>
+    <string name="delete">Löschen</string>
+    <string name="remove">Entfernen</string>
+    <string name="rename">Umbenennen</string>
+    <string name="share">Teilen</string>
+    <string name="copy">Kopieren</string>
+    <string name="copied">In die Zwischenablage kopiert</string>
+    <string name="clear">Leeren</string>
+    <string name="info">Info</string>
+    <string name="all">Alle</string>
+    <string name="name">Name</string>
+    <string name="never">Nie</string>
+    <string name="show_all">Alle anzeigen</string>
+    <string name="n_items">%1$d Elemente</string>
+    <string name="n_selected">%1$d ausgewählt</string>
+    <string name="n_days">%1$d Tage</string>
+    <string name="session_expired">Sitzung abgelaufen – bitte erneut anmelden</string>
+
+    <!-- onboarding -->
+    <string name="server_intro">Verbinde die App mit deinem Pixelhort-Server.</string>
+    <string name="server_url">Server-Adresse</string>
+    <string name="server_url_hint">z. B. https://fotos.example.com oder http://192.168.1.10:2342</string>
+    <string name="connect">Verbinden</string>
+    <string name="change_server">Server ändern</string>
+    <string name="email">E-Mail</string>
+    <string name="password">Passwort</string>
+    <string name="login">Anmelden</string>
+    <string name="login_oauth">Mit SSO anmelden</string>
+    <string name="login_failed">E-Mail oder Passwort falsch</string>
+    <string name="setup_required">Auf diesem Server existiert noch kein Konto. Bitte zuerst im Web-Interface einrichten.</string>
+
+    <!-- navigation -->
+    <string name="photos">Fotos</string>
+    <string name="search">Suche</string>
+    <string name="library">Bibliothek</string>
+    <string name="albums">Alben</string>
+    <string name="favorites">Favoriten</string>
+    <string name="people">Personen</string>
+    <string name="map">Karte</string>
+    <string name="places">Orte</string>
+    <string name="things">Dinge</string>
+    <string name="shared_links">Geteilte Links</string>
+    <string name="partner_sharing">Partner-Freigabe</string>
+    <string name="archive_title">Archiv</string>
+    <string name="locked_folder">Gesperrter Ordner</string>
+    <string name="trash">Papierkorb</string>
+    <string name="backup">Sicherung</string>
+    <string name="settings">Einstellungen</string>
+
+    <!-- timeline -->
+    <string name="timeline_empty">Noch keine Fotos. Aktiviere die Sicherung, um Fotos von diesem Gerät hochzuladen.</string>
+    <string name="favorites_empty">Noch keine Favoriten</string>
+    <string name="archive_empty">Das Archiv ist leer</string>
+    <string name="trash_empty">Der Papierkorb ist leer</string>
+    <string name="no_photos">Keine Fotos</string>
+    <string name="favorite">Favorit</string>
+    <string name="archive">Archivieren</string>
+    <string name="unarchive">Aus Archiv entfernen</string>
+    <string name="move_to_locked">In gesperrten Ordner verschieben</string>
+    <string name="move_out_of_locked">Aus gesperrtem Ordner entfernen</string>
+    <string name="delete_forever">Endgültig löschen</string>
+    <string name="restore">Wiederherstellen</string>
+    <string name="restore_all">Alle wiederherstellen</string>
+    <string name="empty_trash">Papierkorb leeren</string>
+    <string name="confirm_trash">%1$d Element(e) in den Papierkorb verschieben?</string>
+    <string name="confirm_delete_forever">%1$d Element(e) endgültig löschen? Das kann nicht rückgängig gemacht werden.</string>
+    <string name="confirm_empty_trash">Alle Elemente im Papierkorb endgültig löschen?</string>
+
+    <!-- viewer -->
+    <string name="download">Herunterladen</string>
+    <string name="download_started">Download gestartet</string>
+    <string name="preparing_share">Datei wird vorbereitet …</string>
+    <string name="live_photo_hint">Live-Foto: gedrückt halten zum Abspielen</string>
+    <string name="location">Ort</string>
+
+    <!-- albums -->
+    <string name="album_new">Neues Album</string>
+    <string name="album_name">Albumname</string>
+    <string name="album_empty">Dieses Album ist leer. Füge Fotos über die Mehrfachauswahl in der Zeitleiste hinzu.</string>
+    <string name="no_albums">Noch keine Alben</string>
+    <string name="add_to_album">Zu Album hinzufügen</string>
+    <string name="added_to_album">Zu „%1$s“ hinzugefügt</string>
+    <string name="added_n_to_album">%1$d zu „%2$s“ hinzugefügt</string>
+    <string name="remove_from_album">Aus Album entfernen</string>
+    <string name="confirm_remove_from_album">%1$d Element(e) aus dem Album entfernen?</string>
+    <string name="delete_album">Album löschen</string>
+    <string name="confirm_delete_album">Album löschen? Die Fotos selbst bleiben erhalten.</string>
+    <string name="shared_albums">Geteilt</string>
+    <string name="shared">geteilt</string>
+    <string name="shared_with">Geteilt mit %1$s</string>
+    <string name="share_with_users">Mit Personen teilen</string>
+    <string name="choose_users">Benutzer auswählen</string>
+    <string name="no_other_users">Keine weiteren Benutzer auf diesem Server</string>
+    <string name="role_editor">Darf bearbeiten</string>
+    <string name="role_viewer">Nur ansehen</string>
+
+    <!-- shared links -->
+    <string name="share_link">Link teilen</string>
+    <string name="shared_link_create">Geteilten Link erstellen</string>
+    <string name="description">Beschreibung</string>
+    <string name="password_optional">Passwort (optional)</string>
+    <string name="allow_download">Download erlauben</string>
+    <string name="expires">Läuft ab</string>
+    <string name="expires_at">Läuft ab: %1$s</string>
+    <string name="password_protected">Passwortgeschützt</string>
+    <string name="no_shared_links">Keine geteilten Links</string>
+    <string name="confirm_delete_link">Diesen Link löschen? Er funktioniert danach nicht mehr.</string>
+
+    <!-- partners -->
+    <string name="add_partner">Partner hinzufügen</string>
+    <string name="partners_shared_by">Ich teile meine Bibliothek mit</string>
+    <string name="partners_shared_with">Mit mir geteilt</string>
+    <string name="partners_none_by">Du teilst deine Bibliothek mit niemandem.</string>
+    <string name="partners_none_with">Niemand teilt seine Bibliothek mit dir.</string>
+    <string name="show_in_timeline">In meiner Zeitleiste anzeigen</string>
+
+    <!-- search -->
+    <string name="search_hint">Dateiname oder Text suchen</string>
+    <string name="search_smart_hint">z. B. „Hund am Strand“</string>
+    <string name="search_mode_smart">Intelligent</string>
+    <string name="search_mode_filename">Dateiname</string>
+    <string name="search_mode_text">Text im Bild</string>
+    <string name="photos_only">Nur Fotos</string>
+    <string name="videos_only">Nur Videos</string>
+    <string name="no_results">Keine Treffer</string>
+    <string name="explore_empty">Hier erscheinen Personen, Orte und Dinge, sobald der Server deine Fotos analysiert hat.</string>
+
+    <!-- people -->
+    <string name="no_people">Noch keine Personen erkannt</string>
+    <string name="unnamed">Unbenannt</string>
+    <string name="rename_person">Person benennen</string>
+
+    <!-- locked folder -->
+    <string name="locked_text">Fotos im gesperrten Ordner sind nur nach Eingabe deiner PIN sichtbar.</string>
+    <string name="locked_setup_text">Lege eine PIN fest, um den gesperrten Ordner zu verwenden.</string>
+    <string name="locked_empty">Der gesperrte Ordner ist leer</string>
+    <string name="unlock">Entsperren</string>
+    <string name="lock">Sperren</string>
+    <string name="set_pin">PIN festlegen</string>
+    <string name="enter_pin">PIN eingeben</string>
+    <string name="pin_hint">PIN (4–8 Ziffern)</string>
+    <string name="pin_invalid">Die PIN muss aus 4 bis 8 Ziffern bestehen</string>
+    <string name="pin_wrong">Falsche PIN</string>
+    <string name="biometric_subtitle">Bestätige deine Identität</string>
+
+    <!-- backup -->
+    <string name="backup_now">Jetzt sichern</string>
+    <string name="backed_up">Gesichert</string>
+    <string name="remaining">Ausstehend</string>
+    <string name="errors">Fehler</string>
+    <string name="last_backup">Letzte Sicherung: %1$s</string>
+    <string name="never_backed_up">Noch keine Sicherung durchgeführt</string>
+    <string name="backup_background">Automatische Sicherung</string>
+    <string name="backup_background_sub">Neue Fotos und Videos im Hintergrund hochladen</string>
+    <string name="backup_wifi_only">Nur über WLAN</string>
+    <string name="backup_charging_only">Nur beim Laden</string>
+    <string name="backup_videos">Videos sichern</string>
+    <string name="backup_albums">Alben auf diesem Gerät</string>
+    <string name="backup_albums_sub">Wähle aus, welche Alben gesichert werden sollen.</string>
+    <string name="backup_errors_n">%1$d Fehler bei der Sicherung</string>
+    <string name="backup_permission_title">Zugriff auf Fotos benötigt</string>
+    <string name="backup_permission_text">Damit Pixelhort deine Fotos sichern kann, braucht die App Zugriff auf Fotos und Videos sowie auf die Standortdaten in den Bildern.</string>
+    <string name="grant_permission">Zugriff erlauben</string>
+    <string name="backup_settings">Sicherungseinstellungen</string>
+    <string name="backup_on_n_albums">Aktiv · %1$d Album/Alben</string>
+    <string name="backup_off">Aus</string>
+    <string name="notif_channel_progress">Sicherungsfortschritt</string>
+    <string name="notif_channel_result">Sicherungsergebnis</string>
+    <string name="notif_backup_running">Fotos werden gesichert</string>
+    <string name="notif_backup_preparing">Wird vorbereitet …</string>
+    <string name="notif_backup_progress">%1$d von %2$d</string>
+    <string name="notif_backup_done">Sicherung abgeschlossen</string>
+    <string name="notif_backup_result">%1$d hochgeladen, %2$d Fehler</string>
+
+    <!-- settings -->
+    <string name="account">Konto</string>
+    <string name="server">Server</string>
+    <string name="security">Sicherheit</string>
+    <string name="usage">Belegt: %1$s</string>
+    <string name="usage_quota">Belegt: %1$s von %2$s</string>
+    <string name="server_version">Version %1$s</string>
+    <string name="server_unreachable">Server nicht erreichbar</string>
+    <string name="biometric_lock">Biometrie für gesperrten Ordner</string>
+    <string name="biometric_lock_sub">Vor der PIN-Abfrage Fingerabdruck/Gesicht verlangen</string>
+    <string name="app_version">App-Version %1$s</string>
+    <string name="device_id">Geräte-ID: %1$s</string>
+    <string name="logout">Abmelden</string>
+    <string name="confirm_logout">Abmelden? Die automatische Sicherung wird beendet.</string>
+    <plurals name="memory_years_ago">
+        <item quantity="one">Vor %d Jahr</item>
+        <item quantity="other">Vor %d Jahren</item>
+    </plurals>
+</resources>

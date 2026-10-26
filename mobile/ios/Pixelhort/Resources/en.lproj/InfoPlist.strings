@@ -1,0 +1,5 @@
+/* Localized Info.plist strings */
+"NSPhotoLibraryUsageDescription" = "Pixelhort backs up your photos and videos to your own server.";
+"NSPhotoLibraryAddUsageDescription" = "Pixelhort saves photos and videos from your server to your library.";
+"NSFaceIDUsageDescription" = "Face ID unlocks the locked folder.";
+"NSLocalNetworkUsageDescription" = "Pixelhort connects to your server on the local network.";

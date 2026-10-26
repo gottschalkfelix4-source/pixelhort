@@ -1,0 +1,98 @@
+# XcodeGen spec for the Pixelhort iOS app.
+#   brew install xcodegen && xcodegen generate && open Pixelhort.xcodeproj
+name: Pixelhort
+
+options:
+  bundleIdPrefix: app.pixelhort
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: de
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: NO
+    SWIFT_EMIT_LOC_STRINGS: YES
+
+targets:
+  Pixelhort:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Pixelhort
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.pixelhort
+        PRODUCT_NAME: Pixelhort
+        INFOPLIST_FILE: Pixelhort/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        # Set your team here or in Xcode (Signing & Capabilities):
+        DEVELOPMENT_TEAM: ""
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+    info:
+      path: Pixelhort/Info.plist
+      properties:
+        CFBundleDisplayName: Pixelhort
+        CFBundleDevelopmentRegion: de
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleLocalizations:
+          - de
+          - en
+        LSRequiresIPhoneOS: true
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSPhotoLibraryUsageDescription: Pixelhort sichert deine Fotos und Videos auf deinem eigenen Server.
+        NSPhotoLibraryAddUsageDescription: Pixelhort speichert Fotos und Videos von deinem Server in deiner Mediathek.
+        NSFaceIDUsageDescription: Face ID entsperrt den gesperrten Ordner.
+        NSLocalNetworkUsageDescription: Pixelhort verbindet sich mit deinem Server im lokalen Netzwerk.
+        NSAppTransportSecurity:
+          # Self-hosted servers are often reached via plain http on the LAN.
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+        BGTaskSchedulerPermittedIdentifiers:
+          - app.pixelhort.backup.refresh
+          - app.pixelhort.backup.processing
+        UIBackgroundModes:
+          - fetch
+          - processing
+        CFBundleURLTypes:
+          - CFBundleURLName: app.pixelhort.oauth
+            CFBundleTypeRole: Viewer
+            CFBundleURLSchemes:
+              - app.pixelhort
+        PHPhotoLibraryPreventAutomaticLimitedAccessAlert: true
+
+schemes:
+  Pixelhort:
+    build:
+      targets:
+        Pixelhort: all
+    run:
+      config: Debug
+    archive:
+      config: Release

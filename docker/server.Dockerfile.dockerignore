@@ -1,0 +1,10 @@
+*
+!Cargo.toml
+!Cargo.lock
+!crates/common
+!crates/server
+!crates/cli
+!web
+web/node_modules
+web/dist
+**/target

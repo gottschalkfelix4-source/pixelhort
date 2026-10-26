@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="pixelhort_secure.xml" />
+        <exclude domain="sharedpref" path="pixelhort_secure_fallback.xml" />
+        <exclude domain="database" path="backup.db" />
+        <exclude domain="file" path="datastore/pixelhort_settings.preferences_pb" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="pixelhort_secure.xml" />
+        <exclude domain="database" path="backup.db" />
+    </device-transfer>
+</data-extraction-rules>
