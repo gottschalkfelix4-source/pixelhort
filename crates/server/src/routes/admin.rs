@@ -20,6 +20,7 @@ pub fn router() -> Router<SharedState> {
         .route("/server/info", get(info))
         .route("/server/statistics", get(statistics))
         .route("/admin/config", get(get_config).put(put_config))
+        .route("/admin/video/accel-test", post(accel_test))
         .route("/admin/backups", get(list_backups).post(create_backup))
         .route("/admin/backups/{name}", get(download_backup).delete(delete_backup))
         .route("/jobs", get(job_status))
@@ -94,12 +95,43 @@ async fn put_config(State(state): State<SharedState>, _a: AdminAuth, Json(patch)
     if cfg.video.accel != "none" && !cfg.video.accel_device.starts_with("/dev/") {
         return Err(AppError::bad("acceleration device must be a path under /dev/"));
     }
+    for n in [cfg.jobs.metadata, cfg.jobs.thumbnails, cfg.jobs.video] {
+        if !(1..=jobs::MAX_WORKERS).contains(&n) {
+            return Err(AppError::bad(format!("concurrent jobs must be between 1 and {}", jobs::MAX_WORKERS)));
+        }
+    }
     if cfg.map.enabled && !cfg.map.tile_url.contains("{z}") {
         return Err(AppError::bad("map tile URL must contain {z}, {x} and {y}"));
     }
     sysconfig::save(&state.db, &cfg).await?;
     *state.sys.write().expect("config lock") = cfg.clone();
+    for q in ["metadata", "thumbnails", "video"] {
+        state.jobs.wake(q);
+    }
     Ok(Json(cfg))
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AccelTest {
+    accel: String,
+    accel_device: String,
+}
+
+/// Runs a short GPU transcode with the given (not yet saved) settings.
+async fn accel_test(State(state): State<SharedState>, _a: AdminAuth, Json(req): Json<AccelTest>) -> AppResult<Json<Value>> {
+    if !req.accel_device.starts_with("/dev/") {
+        return Err(AppError::bad("acceleration device must be a path under /dev/"));
+    }
+    let cfg = sysconfig::VideoConfig { accel: req.accel, accel_device: req.accel_device, ..state.sys().video };
+    let mut devices: Vec<String> = std::fs::read_dir("/dev/dri")
+        .map(|d| d.flatten().map(|e| e.path().to_string_lossy().to_string()).filter(|p| p.contains("renderD")).collect())
+        .unwrap_or_default();
+    devices.sort();
+    Ok(Json(match jobs::video::test_accel(&cfg).await {
+        Ok(encoder) => json!({ "ok": true, "encoder": encoder, "devices": devices }),
+        Err(e) => json!({ "ok": false, "error": format!("{e:#}"), "devices": devices }),
+    }))
 }
 
 async fn list_backups(State(state): State<SharedState>, _a: AdminAuth) -> AppResult<Json<Value>> {

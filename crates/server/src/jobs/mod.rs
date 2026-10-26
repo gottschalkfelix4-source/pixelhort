@@ -38,6 +38,20 @@ pub const QUEUES: &[(&str, usize)] = &[
 
 pub const MAX_ATTEMPTS: i32 = 3;
 
+/// Upper limit for the worker counts set in the admin settings.
+pub const MAX_WORKERS: usize = 8;
+
+/// Worker count from the admin settings, for the queues that have one.
+fn configured_workers(state: &SharedState, queue: &str) -> Option<usize> {
+    let j = state.sys().jobs;
+    match queue {
+        "metadata" => Some(j.metadata),
+        "thumbnails" => Some(j.thumbnails),
+        "video" => Some(j.video),
+        _ => None,
+    }
+}
+
 #[derive(Debug, Clone, FromRow)]
 pub struct Job {
     pub id: i64,
@@ -84,7 +98,7 @@ impl JobQueue {
         Ok(())
     }
 
-    fn wake(&self, queue: &str) {
+    pub fn wake(&self, queue: &str) {
         if let Some(n) = self.notify.get(queue) {
             n.notify_waiters();
             n.notify_one();
@@ -248,13 +262,16 @@ async fn handle(state: &SharedState, job: &Job) -> anyhow::Result<()> {
 
 pub fn start_workers(state: SharedState) {
     for (queue, concurrency) in QUEUES {
-        for _ in 0..*concurrency {
+        // Configurable queues get the maximum; workers above the setting stay idle.
+        let spawn = if configured_workers(&state, queue).is_some() { MAX_WORKERS } else { *concurrency };
+        for worker in 0..spawn {
             let state = state.clone();
             let queue = *queue;
             tokio::spawn(async move {
                 let notify = state.jobs.notify[queue].clone();
                 loop {
-                    if state.jobs.is_paused(queue) {
+                    let enabled = configured_workers(&state, queue).is_none_or(|n| worker < n);
+                    if state.jobs.is_paused(queue) || !enabled {
                         tokio::select! {
                             _ = notify.notified() => {}
                             _ = tokio::time::sleep(Duration::from_secs(5)) => {}

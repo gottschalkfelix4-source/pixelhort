@@ -93,6 +93,7 @@ export interface SystemConfig {
   ml: MlConfig;
   backup: { enabled: boolean; cron: string; keep: number };
   video: { targetResolution: number; crf: number; preset: string; accel: 'none' | 'vaapi' | 'qsv'; accelDevice: string };
+  jobs: { metadata: number; thumbnails: number; video: number };
   trash: { days: number };
   reverseGeocoding: { enabled: boolean };
   passwordLogin: { enabled: boolean };
@@ -701,6 +702,8 @@ export const api = {
   adminDeleteUser: (id: Uuid) => del<void>(`/admin/users/${id}`),
   getConfig: () => get<SystemConfig>('/admin/config'),
   putConfig: (c: DeepPartial<SystemConfig>) => put<SystemConfig>('/admin/config', c),
+  testAccel: (accel: string, accelDevice: string) =>
+    post<{ ok: boolean; encoder?: string; error?: string; devices: string[] }>('/admin/video/accel-test', { accel, accelDevice }),
   backups: () => get<BackupDto[]>('/admin/backups'),
   createBackup: () => post<void>('/admin/backups'),
   deleteBackup: (name: string) => del<void>(`/admin/backups/${encodeURIComponent(name)}`),

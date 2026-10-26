@@ -6,6 +6,21 @@
   let cfg = $state<SystemConfig | null>(null);
   let busy = $state(false);
   let quotaGb = $state('');
+  let accelTest = $state<{ ok: boolean; encoder?: string; error?: string; devices: string[] } | null>(null);
+  let testing = $state(false);
+
+  async function testAccel() {
+    if (!cfg) return;
+    testing = true;
+    accelTest = null;
+    try {
+      accelTest = await api.testAccel(cfg.video.accel, cfg.video.accelDevice);
+    } catch (err) {
+      toastError(err);
+    } finally {
+      testing = false;
+    }
+  }
 
   function loaded(c: SystemConfig) {
     cfg = c;
@@ -125,6 +140,32 @@
         {/if}
       </div>
       <p class="muted small">{t('cfgAccelHint')}</p>
+      {#if cfg.video.accel !== 'none'}
+        <div class="accel-test">
+          <button type="button" class="btn" disabled={testing} onclick={testAccel}>{testing ? t('cfgAccelTesting') : t('cfgAccelTest')}</button>
+          {#if accelTest}
+            <span class={accelTest.ok ? 'ok' : 'err'}
+              >{accelTest.ok ? t('cfgAccelOk', { encoder: accelTest.encoder ?? '' }) : t('cfgAccelFailed')}</span
+            >
+          {/if}
+        </div>
+        {#if accelTest}
+          <p class="muted small">
+            {accelTest.devices.length ? t('cfgAccelDevices', { list: accelTest.devices.join(', ') }) : t('cfgAccelNoDevices')}
+          </p>
+          {#if accelTest.error}<pre class="accel-error">{accelTest.error}</pre>{/if}
+        {/if}
+      {/if}
+    </fieldset>
+
+    <fieldset class="card">
+      <legend>{t('cfgJobs')}</legend>
+      <div class="grid-2">
+        <label class="field">{t('cfgJobsMetadata')}<input type="number" min="1" max="8" step="1" bind:value={cfg.jobs.metadata} /></label>
+        <label class="field">{t('cfgJobsThumbnails')}<input type="number" min="1" max="8" step="1" bind:value={cfg.jobs.thumbnails} /></label>
+        <label class="field">{t('cfgJobsVideo')}<input type="number" min="1" max="8" step="1" bind:value={cfg.jobs.video} /></label>
+      </div>
+      <p class="muted small">{t('cfgJobsHint')}</p>
     </fieldset>
 
     <fieldset class="card">
@@ -219,6 +260,29 @@
   }
   .narrow {
     max-width: 260px;
+  }
+  .accel-test {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .accel-test .ok {
+    color: var(--success);
+  }
+  .accel-test .err {
+    color: var(--danger);
+  }
+  .accel-error {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-soft);
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 220px;
+    overflow: auto;
   }
   .actions {
     position: sticky;

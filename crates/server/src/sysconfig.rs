@@ -10,6 +10,7 @@ pub struct SystemConfig {
     pub ml: MlConfig,
     pub backup: BackupConfig,
     pub video: VideoConfig,
+    pub jobs: JobsConfig,
     pub trash: TrashConfig,
     pub reverse_geocoding: Toggle,
     pub password_login: Toggle,
@@ -19,6 +20,15 @@ pub struct SystemConfig {
     pub library: LibraryConfig,
     pub image: ImageConfig,
     pub map: MapConfig,
+}
+
+/// Concurrent workers of the CPU-heavy queues (1 to `jobs::MAX_WORKERS`).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct JobsConfig {
+    pub metadata: usize,
+    pub thumbnails: usize,
+    pub video: usize,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -163,6 +173,12 @@ impl Default for VideoConfig {
     }
 }
 
+impl Default for JobsConfig {
+    fn default() -> Self {
+        Self { metadata: 4, thumbnails: 4, video: 1 }
+    }
+}
+
 impl Default for LibraryConfig {
     fn default() -> Self {
         Self { scan_enabled: true, scan_cron: "0 0 * * * *".into() }
@@ -220,6 +236,7 @@ impl Default for SystemConfig {
             ml: MlConfig::default(),
             backup: BackupConfig::default(),
             video: VideoConfig::default(),
+            jobs: JobsConfig::default(),
             trash: TrashConfig::default(),
             reverse_geocoding: Toggle {
                 enabled: env("PH_REVERSE_GEOCODING").map(|v| v != "false").unwrap_or(true),

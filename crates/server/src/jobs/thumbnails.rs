@@ -21,7 +21,8 @@ pub async fn render(state: &SharedState, asset: &AssetRow, apply_edits: bool) ->
         .await?
         .flatten();
     let duration = asset.duration_ms.map(|d| d as f64 / 1000.0);
-    let img = media::load_upright(Path::new(&asset.original_path), asset.is_video(), orientation, duration).await?;
+    let gpu = crate::jobs::video::gpu_device(&state.sys().video);
+    let img = media::load_upright(Path::new(&asset.original_path), asset.is_video(), orientation, duration, gpu.as_deref()).await?;
     Ok(match (apply_edits, edits_of(asset)) {
         (true, Some(e)) => tokio::task::spawn_blocking(move || media::apply_edits(img, &e)).await?,
         _ => img,

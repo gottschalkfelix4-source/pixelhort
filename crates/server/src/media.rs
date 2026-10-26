@@ -163,31 +163,37 @@ pub async fn ffprobe(path: &Path) -> anyhow::Result<Probe> {
     Ok(p)
 }
 
-/// Grabs a representative frame from a video as an image (ffmpeg auto-rotates).
-pub async fn video_frame(path: &Path, duration: Option<f64>) -> anyhow::Result<DynamicImage> {
+/// Grabs a representative frame from a video as an image (ffmpeg auto-rotates). With `gpu`
+/// (a VAAPI render node) the video is decoded on the GPU, falling back to software.
+pub async fn video_frame(path: &Path, duration: Option<f64>, gpu: Option<&str>) -> anyhow::Result<DynamicImage> {
     let seek = duration.map(|d| (d / 2.0).min(1.0)).unwrap_or(0.0);
-    let seek = format!("{seek:.3}");
-    let bytes = run(
-        "ffmpeg",
-        os_args![
-            "-hide_banner", "-loglevel", "error", "-ss", seek.as_str(), "-i", path.as_os_str(),
-            "-frames:v", "1", "-f", "image2pipe", "-vcodec", "mjpeg", "-q:v", "2", "-"
-        ],
-    )
-    .await?;
-    if bytes.is_empty() {
-        // Very short clips: retry from the start.
-        let bytes = run(
-            "ffmpeg",
-            os_args![
-                "-hide_banner", "-loglevel", "error", "-i", path.as_os_str(), "-frames:v", "1",
-                "-f", "image2pipe", "-vcodec", "mjpeg", "-"
-            ],
-        )
-        .await?;
-        return decode_bytes(bytes).await;
+    if let Some(dev) = gpu {
+        match grab_frame(path, seek, Some(dev)).await {
+            Ok(img) => return Ok(img),
+            Err(e) => tracing::debug!(file = %path.display(), "GPU frame decoding failed: {e:#}"),
+        }
     }
-    decode_bytes(bytes).await
+    grab_frame(path, seek, None).await
+}
+
+async fn grab_frame(path: &Path, seek: f64, gpu: Option<&str>) -> anyhow::Result<DynamicImage> {
+    let seek = format!("{seek:.3}");
+    for ss in [Some(seek.as_str()), None] {
+        let mut args = os_args!["-hide_banner", "-loglevel", "error"].to_vec();
+        if let Some(dev) = gpu {
+            args.extend(os_args!["-hwaccel", "vaapi", "-hwaccel_device", dev]);
+        }
+        if let Some(ss) = ss {
+            args.extend(os_args!["-ss", ss]);
+        }
+        args.extend(os_args!["-i", path.as_os_str(), "-frames:v", "1", "-f", "image2pipe", "-vcodec", "mjpeg", "-q:v", "2", "-"]);
+        let bytes = run("ffmpeg", &args).await?;
+        // Very short clips yield nothing after the seek point: retry from the start.
+        if !bytes.is_empty() {
+            return decode_bytes(bytes).await;
+        }
+    }
+    bail!("ffmpeg returned no frame")
 }
 
 async fn decode_bytes(bytes: Vec<u8>) -> anyhow::Result<DynamicImage> {
@@ -238,9 +244,15 @@ async fn ffmpeg_decode(path: &Path) -> anyhow::Result<DynamicImage> {
 }
 
 /// Decodes any supported still image or a video frame and returns it upright.
-pub async fn load_upright(path: &Path, is_video: bool, orientation: Option<i32>, duration: Option<f64>) -> anyhow::Result<DynamicImage> {
+pub async fn load_upright(
+    path: &Path,
+    is_video: bool,
+    orientation: Option<i32>,
+    duration: Option<f64>,
+    gpu: Option<&str>,
+) -> anyhow::Result<DynamicImage> {
     if is_video {
-        return video_frame(path, duration).await;
+        return video_frame(path, duration, gpu).await;
     }
     let ext = extension(path);
     let raw = pixelhort_common::RAW_EXTENSIONS.contains(&ext.as_str());
@@ -382,6 +394,10 @@ pub fn fit_longest(img: &DynamicImage, max: u32) -> DynamicImage {
     let (w, h) = img.dimensions();
     if w.max(h) <= max {
         return img.clone();
+    }
+    // Lanczos on a full 12–48 MP photo is slow: shrink with a fast box filter first.
+    if w.max(h) > max * 3 {
+        return img.thumbnail(max * 2, max * 2).resize(max, max, FilterType::Lanczos3);
     }
     img.resize(max, max, FilterType::Lanczos3)
 }

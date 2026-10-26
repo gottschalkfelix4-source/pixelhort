@@ -4,6 +4,7 @@
 use std::ffi::OsString;
 use std::path::Path;
 
+use anyhow::Context;
 use uuid::Uuid;
 
 use crate::media;
@@ -25,6 +26,22 @@ enum Encoder {
     Vaapi { low_power: bool },
     /// VAAPI decoding and scaling, Quick Sync encoding.
     Qsv,
+}
+
+impl Encoder {
+    fn label(self) -> &'static str {
+        match self {
+            Encoder::Software => "software (libx264)",
+            Encoder::Vaapi { low_power: true } => "VAAPI (low power)",
+            Encoder::Vaapi { low_power: false } => "VAAPI",
+            Encoder::Qsv => "Quick Sync",
+        }
+    }
+}
+
+/// The VAAPI render node to use, if hardware acceleration is enabled and the device exists.
+pub fn gpu_device(cfg: &VideoConfig) -> Option<String> {
+    (cfg.accel != "none" && Path::new(&cfg.accel_device).exists()).then(|| cfg.accel_device.clone())
 }
 
 /// Encoders to try, in order.
@@ -123,7 +140,7 @@ async fn ffmpeg(args: &[OsString]) -> anyhow::Result<()> {
 
 async fn transcode(src: &Path, dst: &Path, p: &media::Probe, cfg: &VideoConfig) -> anyhow::Result<()> {
     let mut encoders = encoders(cfg);
-    if cfg.accel != "none" && !Path::new(&cfg.accel_device).exists() {
+    if cfg.accel != "none" && gpu_device(cfg).is_none() {
         tracing::warn!(device = %cfg.accel_device, "GPU device not found (is /dev/dri passed to the container?), transcoding in software");
         encoders.retain(|e| *e == Encoder::Software);
     }
@@ -137,7 +154,7 @@ async fn transcode(src: &Path, dst: &Path, p: &media::Probe, cfg: &VideoConfig) 
         }
         match ffmpeg(&args).await {
             Ok(()) => {
-                tracing::debug!(file = %src.display(), ?enc, "transcoded");
+                tracing::info!(file = %src.display(), encoder = enc.label(), "video transcoded");
                 return Ok(());
             }
             Err(e) => {
@@ -151,6 +168,42 @@ async fn transcode(src: &Path, dst: &Path, p: &media::Probe, cfg: &VideoConfig) 
         }
     }
     Err(hw_err.unwrap_or_else(|| anyhow::anyhow!("no usable encoder")))
+}
+
+/// Transcodes a generated test clip with the configured GPU pipeline (no software fallback)
+/// and returns the encoder that worked.
+pub async fn test_accel(cfg: &VideoConfig) -> anyhow::Result<&'static str> {
+    if cfg.accel == "none" {
+        anyhow::bail!("no hardware acceleration selected");
+    }
+    if gpu_device(cfg).is_none() {
+        anyhow::bail!("{} not found (is /dev/dri passed to the container?)", cfg.accel_device);
+    }
+    let dir = std::env::temp_dir().join(format!("ph-accel-{}", Uuid::new_v4()));
+    tokio::fs::create_dir_all(&dir).await?;
+    let (src, dst) = (dir.join("in.mp4"), dir.join("out.mp4"));
+    let res = async {
+        let mut clip: Vec<OsString> = ["-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc2=size=1920x1080:rate=30:duration=1"]
+            .into_iter()
+            .chain(["-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p"])
+            .map(OsString::from)
+            .collect();
+        clip.push(src.clone().into());
+        ffmpeg(&clip).await.context("creating the test clip")?;
+        let probe = media::ffprobe(&src).await?;
+        let mut errors = Vec::new();
+        for enc in encoders(cfg).into_iter().filter(|e| *e != Encoder::Software) {
+            let Some(args) = ffmpeg_args(enc, &src, &dst, &probe, cfg) else { continue };
+            match ffmpeg(&args).await {
+                Ok(()) => return Ok(enc.label()),
+                Err(e) => errors.push(format!("{}: {e:#}", enc.label())),
+            }
+        }
+        anyhow::bail!("{}", errors.join("\n"))
+    }
+    .await;
+    let _ = tokio::fs::remove_dir_all(&dir).await;
+    res
 }
 
 pub async fn run(state: &SharedState, asset_id: Uuid) -> anyhow::Result<()> {
