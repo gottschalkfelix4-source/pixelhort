@@ -66,8 +66,9 @@ docker compose up -d ml          # oder: docker run -p 3003:3003 -v ml-cache:/ca
 
 Auf dem Server in `.env` `PH_ML_URL=http://<ml-rechner>:3003` setzen, oder die
 URL im Admin-Bereich unter Einstellungen → ML eintragen. GPU-Build:
-`docker build -f docker/ml.Dockerfile --build-arg FEATURES=cuda …` (siehe
-[crates/ml/README.md](crates/ml/README.md)).
+`docker build -f docker/ml.Dockerfile --build-arg FEATURES=cuda …` (NVIDIA) bzw.
+`FEATURES=openvino` (Intel Arc), fertig als `pixelhort-ml:latest-cuda` /
+`pixelhort-ml:latest-openvino` (siehe [crates/ml/README.md](crates/ml/README.md)).
 
 ## Komponenten
 

@@ -44,6 +44,7 @@ curl -s -X POST localhost:3003/predict -F image=@photo.jpg -F tasks=clip,faces,o
 | `PH_ML_FACE_MODEL` | `buffalo_l` | Any `immich-app/<name>` InsightFace repo (`buffalo_l`, `buffalo_s`, `antelopev2`, ...) |
 | `PH_ML_MODEL_TTL_SECS` | `300` | Unload models after this many idle seconds (`0` = never) |
 | `PH_ML_THREADS` | `0` | Intra-op threads per ONNX session (`0` = ONNX Runtime default) |
+| `PH_ML_OPENVINO_DEVICE` | `GPU` | OpenVINO device (`openvino` builds only): `GPU`, `GPU.0`, `GPU.1`, `CPU`, `NPU` |
 | `PH_ML_PRELOAD` | unset | Comma list of `clip,faces,ocr,objects` to download and load at startup |
 | `PH_ML_HF_ENDPOINT` | `https://huggingface.co` | Hugging Face base URL (mirror); used for the CLIP and face models |
 | `PH_ML_OCR_DET_URL` | PP-OCRv4 mobile det (see below) | OCR text detection model (ONNX) |
@@ -130,6 +131,16 @@ docker build -f docker/ml.Dockerfile --build-arg FEATURES=cuda \
   --build-arg RUNTIME_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu22.04 -t pixelhort-ml:cuda .
 docker run --gpus all -p 3003:3003 -v pixelhort-ml-cache:/cache pixelhort-ml:cuda
 ```
+
+### Intel GPU (Arc, OpenVINO)
+
+Build with the `openvino` cargo feature. This registers the OpenVINO execution provider (device from `PH_ML_OPENVINO_DEVICE`, default `GPU`; e.g. `GPU.1` for a second GPU or `CPU`). Operators OpenVINO cannot run fall back to the CPU provider. There is no prebuilt ONNX Runtime C library with OpenVINO for Linux, so `ort` uses `load-dynamic` and the Dockerfile takes `libonnxruntime.so` plus the OpenVINO libraries from the `onnxruntime-openvino` Python wheel. Its ONNX Runtime version must match the one of the `ort` crate (rc.10: 1.22). The runtime image is Ubuntu 26.04 with the Intel compute runtime (OpenCL, Level Zero), which supports Arc A- and B-series. Compiled GPU kernels are cached in `<PH_ML_CACHE_DIR>/openvino`, so only the first load of a model is slow. The full build command is at the top of [docker/ml.Dockerfile](../../docker/ml.Dockerfile); CI publishes it as `pixelhort-ml:latest-openvino`.
+
+```sh
+docker run --device /dev/dri -p 3003:3003 -v pixelhort-ml-cache:/cache pixelhort-ml:openvino
+```
+
+The entrypoint adds the group of `/dev/dri/renderD*` to the service user, so `PUID`/`PGID` need no extra permissions.
 
 ## Limitations
 

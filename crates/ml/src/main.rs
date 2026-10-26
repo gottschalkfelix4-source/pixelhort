@@ -434,7 +434,8 @@ async fn main() -> Result<()> {
         .await
         .with_context(|| format!("creating cache dir {}", cfg.cache_dir.display()))?;
     tracing::info!(?cfg.listen, cache = %cfg.cache_dir.display(), clip = %cfg.clip_model, faces = %cfg.face_model,
-        ttl = ?cfg.model_ttl, auth = cfg.api_key.is_some(), cuda = cfg!(feature = "cuda"), "starting pixelhort-ml");
+        ttl = ?cfg.model_ttl, auth = cfg.api_key.is_some(), cuda = cfg!(feature = "cuda"),
+        openvino = cfg!(feature = "openvino"), "starting pixelhort-ml");
 
     let state: St = Arc::new(AppState {
         dl: Downloader::new(cfg.cache_dir.clone())?,

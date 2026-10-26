@@ -4,3 +4,4 @@
 !crates/ml/Cargo.lock
 !crates/ml/src
 !docker/entrypoint.sh
+!docker/clear-execstack.py

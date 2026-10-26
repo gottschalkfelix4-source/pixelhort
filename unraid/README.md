@@ -56,6 +56,7 @@ Die Images liegen in der GitHub Container Registry und werden bei jedem Push auf
 - `ghcr.io/gottschalkfelix4-source/pixelhort-server:latest`
 - `ghcr.io/gottschalkfelix4-source/pixelhort-ml:latest` (CPU)
 - `ghcr.io/gottschalkfelix4-source/pixelhort-ml:latest-cuda` (NVIDIA-GPU)
+- `ghcr.io/gottschalkfelix4-source/pixelhort-ml:latest-openvino` (Intel-GPU, z. B. Arc)
 
 Solange Repository und Pakete **privat** sind, muss sich Unraid einmalig an der
 Registry anmelden (Personal Access Token mit `read:packages`):
@@ -74,7 +75,9 @@ Installer legt das Icon deshalb direkt unter `dockerMan/images/` ab.
 Container `pixelhort` die *ML-Dienst URL* auf `http://<rechner>:3003` und
 denselben Key eintragen. Mit NVIDIA-GPU das Repository auf `…/pixelhort-ml:latest-cuda`
 ändern, das Nvidia-Driver-Plugin installieren und `--runtime=nvidia` als Extra
-Parameter sowie `NVIDIA_VISIBLE_DEVICES` setzen.
+Parameter sowie `NVIDIA_VISIBLE_DEVICES` setzen. Mit Intel-GPU (Arc) das Repository auf
+`…/pixelhort-ml:latest-openvino` ändern und `/dev/dri` als *Intel-GPU*-Gerät eintragen
+(Treiber `i915`/`xe` muss auf dem Host geladen sein, z. B. per Intel-GPU-TOP-Plugin).
 
 ## Casting auf Fernseher (DLNA)
 

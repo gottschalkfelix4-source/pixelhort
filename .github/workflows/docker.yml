@@ -41,6 +41,16 @@ jobs:
             build-args: |
               FEATURES=cuda
               RUNTIME_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu22.04
+          - name: pixelhort-ml
+            dockerfile: docker/ml.Dockerfile
+            suffix: "-openvino"
+            # The wheel's ONNX Runtime version must match the ort crate (rc.10 = 1.22).
+            build-args: |
+              FEATURES=openvino
+              ORT_WHEEL_URL=https://files.pythonhosted.org/packages/58/79/7ca125aaa651ed4084f755d2f2e10f949a7eaad6d01aaf9a9f8b9a153248/onnxruntime_openvino-1.22.0-cp312-cp312-manylinux_2_28_x86_64.whl
+              ORT_WHEEL_SHA256=000811fd42b027663cd15fcbbde049871164f7353ed28cab0219a1c10eef8e6d
+              RUNTIME_IMAGE=ubuntu:26.04
+              RUNTIME_PACKAGES=intel-opencl-icd libze-intel-gpu1 libze1 ocl-icd-libopencl1
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3

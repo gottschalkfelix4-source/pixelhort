@@ -33,6 +33,17 @@ pub fn load_session(path: &Path, threads: usize) -> Result<Session> {
             .with_execution_providers([CUDAExecutionProvider::default().build()])
             .map_err(oe)?;
     }
+    #[cfg(feature = "openvino")]
+    {
+        use ort::execution_providers::OpenVINOExecutionProvider;
+        let device = std::env::var("PH_ML_OPENVINO_DEVICE").unwrap_or_else(|_| "GPU".into());
+        let mut ep = OpenVINOExecutionProvider::default().with_device_type(device);
+        // Compiled GPU kernels are cached, so later loads of the same model are fast.
+        if let Ok(cache) = std::env::var("PH_ML_CACHE_DIR") {
+            ep = ep.with_cache_dir(Path::new(&cache).join("openvino").to_string_lossy());
+        }
+        b = b.with_execution_providers([ep.build()]).map_err(oe)?;
+    }
     b.commit_from_file(path)
         .map_err(oe)
         .with_context(|| format!("loading model {}", path.display()))

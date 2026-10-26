@@ -13,7 +13,11 @@ if [ "$(id -u)" = "0" ]; then
         # Only fix what is not ours yet (cheap on large libraries).
         find "$dir" -maxdepth 3 \( ! -user "$PUID" -o ! -group "$PGID" \) -exec chown "$PUID:$PGID" {} + 2>/dev/null || true
     done
-    exec setpriv --reuid="$PUID" --regid="$PGID" --clear-groups --inh-caps=-all "$@"
+    # Keep access to GPU render nodes passed in with --device /dev/dri (Intel/OpenVINO).
+    groups="--clear-groups"
+    gids="$(stat -c %g /dev/dri/renderD* 2>/dev/null | sort -u | paste -sd, -)"
+    [ -n "$gids" ] && groups="--groups=$gids"
+    exec setpriv --reuid="$PUID" --regid="$PGID" $groups --inh-caps=-all "$@"
 fi
 
 exec "$@"

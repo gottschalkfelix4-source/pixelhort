@@ -13,6 +13,9 @@ publish = false
 default = []
 # Use the CUDA execution provider (downloads the CUDA build of ONNX Runtime).
 cuda = ["ort/cuda"]
+# Use the OpenVINO execution provider (Intel GPUs such as Arc). ONNX Runtime is
+# loaded at runtime from the onnxruntime-openvino build (see docker/ml.Dockerfile).
+openvino = ["ort/openvino", "ort/load-dynamic"]
 
 [dependencies]
 anyhow = "1"

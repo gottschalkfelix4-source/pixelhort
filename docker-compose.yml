@@ -52,6 +52,8 @@ services:
     #   resources:
     #     reservations:
     #       devices: [{ driver: nvidia, count: 1, capabilities: [gpu] }]
+    # Intel Arc: image ghcr.io/gottschalkfelix4-source/pixelhort-ml:latest-openvino and
+    # devices: ["/dev/dri:/dev/dri"]
 
   db:
     image: pgvector/pgvector:pg16
