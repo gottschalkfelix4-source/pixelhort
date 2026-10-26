@@ -58,7 +58,7 @@ final class BackupFlowUITests: XCTestCase {
         let toggle = app.switches["backup.enabledToggle"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 10))
         toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
-        app.tap() // lets the interruption monitor handle a permission alert
+        allowPhotoAccess(app)
         XCTAssertTrue(waitFor { (toggle.value as? String) == "1" }, "backup could not be enabled")
         attach(app, "backup-enabled")
         app.navigationBars.buttons.element(boundBy: 0).tap()
@@ -102,6 +102,29 @@ final class BackupFlowUITests: XCTestCase {
     }
 
     // MARK: helpers
+
+    /// iOS 18 shows the photo permission as a full-screen sheet owned by SpringBoard,
+    /// which UI interruption monitors do not catch.
+    private func allowPhotoAccess(_ app: XCUIApplication) {
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let labels = ["Allow Full Access", "Allow Access to All Photos", "Allow"]
+        let deadline = Date().addingTimeInterval(15)
+        while Date() < deadline {
+            for source in [springboard, app] {
+                for label in labels {
+                    let button = source.buttons[label]
+                    if button.exists && button.isHittable {
+                        button.tap()
+                        // iOS may ask for confirmation of full access.
+                        let confirm = springboard.buttons["Allow Full Access"]
+                        if confirm.waitForExistence(timeout: 2) { confirm.tap() }
+                        return
+                    }
+                }
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+        }
+    }
 
     private func waitFor(timeout: TimeInterval = 20, _ condition: () -> Bool) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
